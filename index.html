@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Food Finder AI</title>
+
+<style>
+*{
+box-sizing:border-box;
+font-family:Arial, sans-serif;
+}
+
+body{
+margin:0;
+background:#111;
+color:white;
+padding:20px;
+}
+
+.container{
+max-width:800px;
+margin:auto;
+background:#1b1b1b;
+padding:25px;
+border-radius:20px;
+box-shadow:0 0 30px #000;
+}
+
+h1{
+text-align:center;
+}
+
+h2{
+margin-top:25px;
+color:#ffcc00;
+}
+
+.tag{
+display:inline-block;
+padding:10px 14px;
+margin:5px;
+border-radius:20px;
+background:#333;
+cursor:pointer;
+user-select:none;
+}
+
+.tag.active{
+background:#00c853;
+}
+
+.tag.bad.active{
+background:#d50000;
+}
+
+button{
+width:100%;
+padding:15px;
+margin-top:20px;
+border:none;
+border-radius:12px;
+background:#ffcc00;
+font-size:18px;
+font-weight:bold;
+cursor:pointer;
+}
+
+select,input{
+width:100%;
+padding:12px;
+border-radius:10px;
+margin-top:10px;
+background:#222;
+color:white;
+border:1px solid #555;
+}
+
+.result{
+margin-top:25px;
+background:#222;
+padding:20px;
+border-radius:15px;
+font-size:18px;
+}
+
+.meal{
+background:#333;
+padding:15px;
+border-radius:12px;
+margin:10px 0;
+}
+
+.small{
+color:#aaa;
+font-size:14px;
+}
+
+</style>
+</head>
+
+
+<body>
+
+<div class="container">
+
+<h1>🍽 Food Finder AI</h1>
+
+<p class="small">
+Tell me what you love and what you hate. I’ll never suggest foods with ingredients you don't like.
+</p>
+
+
+<h2>❤️ Ingredients You Like</h2>
+
+<div id="likes"></div>
+
+
+<h2>🚫 Ingredients You Hate</h2>
+
+<div id="dislikes"></div>
+
+
+<h2>How hungry are you?</h2>
+
+<select id="hunger">
+<option value="snack">Just a snack</option>
+<option value="medium">Pretty hungry</option>
+<option value="very">I need food NOW</option>
+</select>
+
+
+<h2>How much time do you have?</h2>
+
+<select id="time">
+<option value="quick">15 minutes</option>
+<option value="normal">30 minutes</option>
+<option value="cook">I want to cook</option>
+</select>
+
+
+<button onclick="findMeal()">
+🔥 Find My Meal
+</button>
+
+
+<div class="result" id="result">
+Waiting for your hunger...
+</div>
+
+
+</div>
+
+
+<script>
+
+
+const ingredients=[
+"Chicken",
+"Beef",
+"Fish",
+"Tuna",
+"Shrimp",
+"Rice",
+"Pasta",
+"Cheese",
+"Eggs",
+"Potatoes",
+"Bacon",
+"Avocado",
+"Spicy",
+"Salad",
+"Bread",
+"Beans",
+"Vegetables",
+"Mushrooms",
+"Mayo",
+"Olives"
+];
+
+
+const likesBox=document.getElementById("likes");
+const dislikesBox=document.getElementById("dislikes");
+
+
+let likes=[];
+let dislikes=[];
+
+
+function buildTags(){
+
+ingredients.forEach(item=>{
+
+let a=document.createElement("span");
+a.className="tag";
+a.innerHTML=item;
+
+a.onclick=()=>{
+
+a.classList.toggle("active");
+
+if(a.classList.contains("active")){
+likes.push(item);
+save();
+}else{
+likes=likes.filter(x=>x!==item);
+save();
+}
+
+}
+
+likesBox.appendChild(a);
+
+
+
+let b=document.createElement("span");
+b.className="tag bad";
+b.innerHTML=item;
+
+b.onclick=()=>{
+
+b.classList.toggle("active");
+
+if(b.classList.contains("active")){
+dislikes.push(item);
+save();
+}else{
+dislikes=dislikes.filter(x=>x!==item);
+save();
+}
+
+}
+
+dislikesBox.appendChild(b);
+
+
+});
+
+}
+
+
+const meals=[
+
+{
+name:"Chicken Quesadilla",
+ingredients:["Chicken","Cheese","Bread"],
+time:"quick"
+},
+
+{
+name:"Spicy Chicken Rice Bowl",
+ingredients:["Chicken","Rice","Spicy","Vegetables"],
+time:"normal"
+},
+
+{
+name:"Shrimp Pasta",
+ingredients:["Shrimp","Pasta","Cheese"],
+time:"cook"
+},
+
+{
+name:"Loaded Potato Bowl",
+ingredients:["Potatoes","Bacon","Cheese"],
+time:"normal"
+},
+
+{
+name:"Tuna Salad",
+ingredients:["Tuna","Mayo","Salad"],
+time:"quick"
+},
+
+{
+name:"Beef Burrito",
+ingredients:["Beef","Beans","Cheese","Rice"],
+time:"normal"
+},
+
+{
+name:"Egg Breakfast Sandwich",
+ingredients:["Eggs","Bread","Cheese","Bacon"],
+time:"quick"
+},
+
+{
+name:"Avocado Toast",
+ingredients:["Avocado","Bread"],
+time:"quick"
+},
+
+{
+name:"Veggie Pasta",
+ingredients:["Pasta","Vegetables","Mushrooms"],
+time:"cook"
+}
+
+];
+
+
+
+function findMeal(){
+
+let available=meals.filter(meal=>{
+
+let hated=meal.ingredients.some(x=>dislikes.includes(x));
+
+return !hated;
+
+});
+
+
+available.sort((a,b)=>{
+
+let scoreA=a.ingredients.filter(x=>likes.includes(x)).length;
+let scoreB=b.ingredients.filter(x=>likes.includes(x)).length;
+
+return scoreB-scoreA;
+
+});
+
+
+let results=available.slice(0,3);
+
+
+let html="<h2>Your Suggestions:</h2>";
+
+
+results.forEach(meal=>{
+
+html+=`
+
+<div class="meal">
+<b>${meal.name}</b><br>
+Ingredients: ${meal.ingredients.join(", ")}
+</div>
+
+`;
+
+});
+
+
+if(results.length===0){
+html+="I couldn't find a match. Add more ingredients you like!";
+}
+
+
+document.getElementById("result").innerHTML=html;
+
+
+save();
+
+}
+
+
+
+function save(){
+
+localStorage.setItem(
+"foodProfile",
+JSON.stringify({
+likes,
+dislikes
+})
+);
+
+}
+
+
+function load(){
+
+let data=JSON.parse(localStorage.getItem("foodProfile"));
+
+if(data){
+likes=data.likes||[];
+dislikes=data.dislikes||[];
+}
+
+}
+
+
+load();
+buildTags();
+
+
+</script>
+
+</body>
+</html>
