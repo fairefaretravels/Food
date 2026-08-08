@@ -1,0 +1,1283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Food Finder AI</title>
+
+<!-- Firebase (compat SDK — no build step needed, works as a plain static site) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<style>
+
+*{
+box-sizing:border-box;
+font-family:Arial, sans-serif;
+}
+
+body{
+margin:0;
+background:#0d0d0d;
+color:white;
+padding:20px;
+}
+
+.app{
+max-width:900px;
+margin:auto;
+background:#181818;
+border-radius:25px;
+padding:25px;
+box-shadow:0 0 40px #000;
+}
+
+h1{
+text-align:center;
+font-size:34px;
+}
+
+h2{
+color:#ffc107;
+margin-top:30px;
+}
+
+.card{
+background:#222;
+padding:20px;
+border-radius:18px;
+margin-top:15px;
+}
+
+.group-title{
+color:#999;
+font-size:13px;
+text-transform:uppercase;
+letter-spacing:1px;
+margin-top:14px;
+margin-bottom:4px;
+}
+
+.tags span{
+display:inline-block;
+background:#333;
+padding:9px 13px;
+border-radius:25px;
+margin:4px;
+cursor:pointer;
+font-size:14px;
+}
+
+.tags span.active{
+background:#00c853;
+}
+
+.tags span.bad.active{
+background:#d50000;
+}
+
+input,select,textarea{
+width:100%;
+padding:14px;
+margin-top:10px;
+border-radius:12px;
+border:1px solid #555;
+background:#111;
+color:white;
+font-size:15px;
+}
+
+textarea{
+resize:vertical;
+min-height:70px;
+}
+
+button{
+width:100%;
+padding:16px;
+margin-top:15px;
+border:0;
+border-radius:15px;
+font-size:18px;
+font-weight:bold;
+background:#ffc107;
+cursor:pointer;
+}
+
+button.secondary{
+background:#333;
+color:white;
+}
+
+.result{
+background:#111;
+padding:20px;
+border-radius:15px;
+margin-top:20px;
+}
+
+.meal{
+background:#252525;
+padding:15px;
+border-radius:15px;
+margin:10px 0;
+}
+
+.small{
+color:#aaa;
+}
+
+.rank-row{
+display:flex;
+align-items:center;
+gap:10px;
+}
+
+.rank-badge{
+background:#ffc107;
+color:#111;
+font-weight:bold;
+border-radius:50%;
+width:34px;
+height:34px;
+min-width:34px;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:15px;
+}
+
+.match-pct{
+color:#00e676;
+font-weight:bold;
+font-size:16px;
+margin-top:4px;
+}
+
+.have-count{
+color:#aaa;
+font-size:14px;
+}
+
+.meta-row{
+display:flex;
+gap:8px;
+flex-wrap:wrap;
+margin-top:6px;
+}
+
+.pill{
+background:#333;
+color:#ccc;
+font-size:11px;
+padding:3px 9px;
+border-radius:12px;
+}
+
+/* ---- Review widgets ---- */
+
+.stars{
+font-size:26px;
+letter-spacing:4px;
+margin-top:8px;
+}
+
+.stars span{
+cursor:pointer;
+color:#555;
+transition:color .1s;
+}
+
+.stars span.filled{
+color:#ffc107;
+}
+
+.review-summary{
+color:#ffc107;
+font-size:15px;
+margin-top:6px;
+}
+
+.review-box{
+margin-top:12px;
+padding-top:12px;
+border-top:1px solid #333;
+}
+
+.review-entry{
+background:#1c1c1c;
+padding:12px;
+border-radius:10px;
+margin-top:10px;
+}
+
+.review-entry .meta{
+color:#888;
+font-size:12px;
+margin-top:4px;
+}
+
+.review-entry button.delete-review{
+width:auto;
+padding:6px 12px;
+font-size:13px;
+margin-top:8px;
+background:#3a3a3a;
+color:#eee;
+border-radius:8px;
+}
+
+.no-reviews{
+color:#888;
+font-style:italic;
+}
+
+.badge{
+display:inline-block;
+background:#333;
+color:#ffc107;
+padding:4px 10px;
+border-radius:20px;
+font-size:12px;
+margin-left:8px;
+vertical-align:middle;
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<div class="app">
+
+
+<h1>🍽 Food Finder AI</h1>
+
+<p class="small">
+Your personal meal assistant. It learns what you love, blocks foods you hate, and scores every meal in a 160-recipe catalog against what's in your kitchen right now.
+</p>
+
+
+<div class="card">
+
+<h2>❤️ Foods I Like</h2>
+<div id="likes"></div>
+
+<h2>🚫 Foods I Hate</h2>
+<div id="dislikes"></div>
+
+</div>
+
+
+<div class="card">
+
+<h2>🧺 My Pantry</h2>
+<p class="small">What ingredients do you already have?</p>
+<input id="pantryInput" placeholder="Example: chicken, rice, cheese">
+<button onclick="addPantry()">Add To Pantry</button>
+<div id="pantryList"></div>
+
+</div>
+
+
+<div class="card">
+
+<h2>🔥 How Hungry Are You?</h2>
+<select id="hunger">
+<option value="snack">Just a snack</option>
+<option value="meal" selected>Regular meal</option>
+<option value="starving">I NEED FOOD NOW</option>
+</select>
+
+<h2>⏱ Cooking Time</h2>
+<select id="cookTime">
+<option value="quick">15 minutes</option>
+<option value="normal" selected>30 minutes</option>
+<option value="slow">I want to cook</option>
+</select>
+
+<h2>📂 Category</h2>
+<select id="categoryFilter">
+<option value="">Any category</option>
+<option value="breakfast">Breakfast</option>
+<option value="lunch">Lunch</option>
+<option value="dinner">Dinner</option>
+<option value="quick">Quick 15-Minute</option>
+<option value="snack">Snacks</option>
+<option value="comfort">Comfort Food</option>
+<option value="healthy">Healthy</option>
+<option value="family">Family / Kid Friendly</option>
+</select>
+
+</div>
+
+
+<div class="card">
+<h2>💬 Ask Food Finder</h2>
+<p class="small">Type naturally — Food Finder reads your hunger, dislikes, and pantry straight out of the sentence.</p>
+<input id="question" placeholder="I'm starving. I hate mayo. I have chicken, rice and cheese.">
+<button onclick="runQuery()">Find My Meal</button>
+</div>
+
+
+<div class="card">
+<h2>🧑‍🍳 Meal Suggestions</h2>
+<div id="results" class="result">Waiting for your hunger...</div>
+</div>
+
+
+<div class="card">
+<h2>🛒 Grocery List</h2>
+<div id="grocery">Nothing added yet.</div>
+<button class="secondary" onclick="clearGrocery()">Clear Grocery List</button>
+</div>
+
+
+<div class="card">
+<h2>⭐ My Meal Ratings <span class="badge">private, this device</span></h2>
+<p class="small">Every meal you've personally rated. Only you can see this.</p>
+<div id="reviewList"></div>
+</div>
+
+
+<div class="card">
+<h2>🌍 App Reviews <span class="badge">public, everyone sees this</span></h2>
+<p class="small">What other Food Finder AI users think of the app itself.</p>
+
+<p id="appRatingSummary" class="review-summary">Loading reviews...</p>
+
+<div id="appReviewList"></div>
+
+<div class="review-box">
+<p class="small">Leave a public review of the app:</p>
+<input id="reviewerName" placeholder="Your name (optional — defaults to Anonymous)">
+<div class="stars" id="appStars"></div>
+<textarea id="appComment" placeholder="What do you think of Food Finder AI?"></textarea>
+<button onclick="submitAppReview()">Post Public Review</button>
+</div>
+
+</div>
+
+
+</div>
+
+
+
+<script>
+
+// =====================================================
+// FIREBASE SETUP
+// =====================================================
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAkbNmC-6ttXVLt_DaM6vK5pxzNtnoaVVI",
+  authDomain: "food-finder-ai-8ac84.firebaseapp.com",
+  projectId: "food-finder-ai-8ac84",
+  storageBucket: "food-finder-ai-8ac84.firebasestorage.app",
+  messagingSenderId: "140217083748",
+  appId: "1:140217083748:web:3447409e077dae3beffc71",
+  measurementId: "G-J4KBJ781PF"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+
+// =====================================================
+// INGREDIENT VOCABULARY
+// Every ingredient used anywhere in the meal catalog must
+// appear here — this is the single source of truth used by
+// the like/dislike buttons AND the free-text query parser.
+// =====================================================
+
+const INGREDIENT_GROUPS = {
+  "Proteins": ["Chicken","Beef","Pork","Turkey","Bacon","Sausage","Ham","Fish","Tuna","Shrimp","Salmon","Eggs","Tofu","Beans","Lentils","Chickpeas"],
+  "Carbs & Grains": ["Rice","Pasta","Bread","Tortilla","Potatoes","Sweet Potato","Oats","Quinoa"],
+  "Dairy": ["Cheese","Milk","Yogurt","Butter"],
+  "Veggies & Fruit": ["Avocado","Tomato","Onion","Garlic","Mushrooms","Spinach","Broccoli","Corn","Peppers","Salad","Vegetables"],
+  "Extras & Flavor": ["Mayo","Honey","Peanut Butter","Chocolate","Spicy","Lemon","Cinnamon"]
+};
+
+const ALL_INGREDIENTS = Object.values(INGREDIENT_GROUPS).flat();
+
+// Used to auto-derive diet tags for every meal — no need to
+// hand-tag "vegetarian" etc. on each recipe.
+const MEAT_ITEMS = ["Chicken","Beef","Pork","Turkey","Bacon","Sausage","Ham","Fish","Tuna","Shrimp","Salmon"];
+const GLUTEN_ITEMS = ["Bread","Pasta","Tortilla"];
+const ANIMAL_ITEMS = [...MEAT_ITEMS, "Eggs", "Cheese", "Milk", "Yogurt", "Butter", "Honey"];
+
+function computeDietTags(ingredients){
+  const tags = [];
+  if(!ingredients.some(i=>MEAT_ITEMS.includes(i))) tags.push("Vegetarian");
+  if(!ingredients.some(i=>GLUTEN_ITEMS.includes(i))) tags.push("Gluten-Free");
+  if(!ingredients.some(i=>ANIMAL_ITEMS.includes(i))) tags.push("Vegan");
+  return tags;
+}
+
+
+// =====================================================
+// MEAL CATALOG
+//
+// HOW TO ADD MEAL #161 (or #500):
+//
+//   meal(id, name, category, "Ingredient,Ingredient", time, difficulty, "hunger,hunger", "Step one|Step two|Step three")
+//
+//   - id           unique short string, never reused
+//   - category     "breakfast" | "lunch" | "dinner" | "quick" | "snack" | "comfort" | "healthy" | "family"
+//   - ingredients  comma-separated, MUST come from ALL_INGREDIENTS above
+//                  (add new ingredients to INGREDIENT_GROUPS first if needed)
+//   - time         "quick" (~15 min) | "normal" (~30 min) | "slow" (~45+ min)
+//   - difficulty   "easy" | "medium" | "hard"
+//   - hunger       comma list from "snack" | "meal" | "starving" — which
+//                  appetite levels this meal satisfies
+//   - steps        pipe-separated instruction list
+//
+// Diet tags (Vegetarian / Vegan / Gluten-Free) are computed
+// automatically from the ingredient list — nothing to fill in.
+// Just push a new meal() call into MEALS and the recommendation
+// engine, review system, and UI all pick it up with zero other
+// code changes.
+// =====================================================
+
+function meal(id, name, category, ing, time, diff, hunger, steps){
+  const ingredients = ing.split(",");
+  return {
+    id, name, category, ingredients, time,
+    difficulty: diff,
+    hunger: hunger.split(","),
+    steps: steps.split("|"),
+    diet: computeDietTags(ingredients)
+  };
+}
+
+const MEALS = [
+
+// ---- Breakfast (20) ----
+meal("b1","🍳 Classic Scrambled Eggs & Toast","breakfast","Eggs,Bread,Butter","quick","easy","snack,meal","Melt butter in a pan|Scramble eggs until fluffy|Serve with buttered toast"),
+meal("b2","🥑 Avocado Toast","breakfast","Avocado,Bread,Lemon","quick","easy","snack,meal","Toast the bread|Mash avocado with a squeeze of lemon|Spread on toast and season"),
+meal("b3","🥪 Bacon & Egg Breakfast Sandwich","breakfast","Eggs,Bacon,Cheese,Bread","quick","easy","meal,starving","Cook bacon until crisp|Fry an egg and melt cheese over it|Stack everything on toasted bread"),
+meal("b4","🥣 Cinnamon Oatmeal","breakfast","Oats,Milk,Cinnamon,Honey","quick","easy","snack,meal","Simmer oats in milk|Stir in cinnamon|Drizzle with honey to serve"),
+meal("b5","🍶 Greek Yogurt Parfait","breakfast","Yogurt,Honey,Oats","quick","easy","snack","Layer yogurt and oats in a glass|Drizzle honey between layers|Chill briefly and serve"),
+meal("b6","🌯 Sausage Breakfast Burrito","breakfast","Eggs,Sausage,Cheese,Tortilla","quick","easy","meal,starving","Cook sausage and scramble eggs|Melt cheese over the mix|Wrap tightly in a warm tortilla"),
+meal("b7","🍳 Veggie Spinach Omelette","breakfast","Eggs,Spinach,Mushrooms,Cheese","normal","medium","meal","Sauté mushrooms and spinach|Pour eggs over and fold|Top with melted cheese"),
+meal("b8","🥜 Peanut Butter Honey Toast","breakfast","Bread,Peanut Butter,Honey","quick","easy","snack","Toast the bread|Spread peanut butter generously|Finish with a drizzle of honey"),
+meal("b9","🧀 Breakfast Quesadilla","breakfast","Eggs,Cheese,Tortilla,Peppers","quick","easy","meal","Scramble eggs with peppers|Layer with cheese in a tortilla|Fold and toast until crispy"),
+meal("b10","🍳 Ham & Cheese Omelette","breakfast","Eggs,Ham,Cheese","quick","easy","meal","Whisk the eggs|Add diced ham and cheese|Fold the omelette and serve hot"),
+meal("b11","🥔 Sweet Potato Breakfast Hash","breakfast","Sweet Potato,Eggs,Onion,Peppers","normal","medium","meal,starving","Dice and pan-fry sweet potato until tender|Add onion and peppers|Top with a fried egg"),
+meal("b12","🍳 Sausage & Potato Skillet","breakfast","Sausage,Eggs,Potatoes,Onion","normal","medium","meal,starving","Brown sausage and potatoes together|Add chopped onion|Crack eggs on top and cook through"),
+meal("b13","🌮 Breakfast Tacos","breakfast","Eggs,Tortilla,Cheese,Tomato","quick","easy","meal","Scramble the eggs|Warm the tortillas|Fill with eggs, cheese and diced tomato"),
+meal("b14","🥣 Overnight Oats","breakfast","Oats,Milk,Honey,Cinnamon","quick","easy","snack,meal","Combine oats and milk in a jar|Stir in honey and cinnamon|Refrigerate overnight and enjoy cold"),
+meal("b15","🐟 Smoked Salmon Toast","breakfast","Salmon,Bread,Cheese,Lemon","quick","easy","meal","Toast the bread|Spread with soft cheese|Top with salmon and a squeeze of lemon"),
+meal("b16","🥣 Chickpea Breakfast Bowl","breakfast","Chickpeas,Eggs,Spinach,Lemon","normal","easy","meal","Warm chickpeas with spinach|Top with a fried egg|Finish with a squeeze of lemon"),
+meal("b17","🥣 Quinoa Breakfast Bowl","breakfast","Quinoa,Eggs,Avocado,Tomato","normal","medium","meal","Cook the quinoa|Top with a fried egg|Add avocado and diced tomato"),
+meal("b18","🍚 Bacon Fried Rice","breakfast","Bacon,Rice,Eggs,Onion","quick","easy","meal,starving","Crisp the bacon and set aside|Fry rice with onion and egg|Stir bacon back in and serve"),
+meal("b19","🍞 Classic French Toast","breakfast","Bread,Eggs,Milk,Cinnamon","normal","easy","meal","Whisk eggs, milk and cinnamon|Dip bread slices to soak|Pan-fry until golden on both sides"),
+meal("b20","🍳 Turkey Sausage Breakfast Bowl","breakfast","Turkey,Eggs,Sweet Potato,Peppers","normal","medium","meal,starving","Brown the turkey sausage|Roast sweet potato and peppers|Top the bowl with a fried egg"),
+
+// ---- Lunch (25) ----
+meal("l1","🥗 Chicken Caesar Salad","lunch","Chicken,Salad,Cheese,Bread","normal","easy","meal","Grill the chicken and slice|Toss salad with cheese and croutons|Top with sliced chicken"),
+meal("l2","🥪 Turkey Club Sandwich","lunch","Turkey,Bacon,Cheese,Bread","quick","easy","meal,starving","Layer turkey and cheese on bread|Add crispy bacon|Stack and slice in half"),
+meal("l3","🧀 Classic Tuna Melt","lunch","Tuna,Cheese,Bread,Mayo","quick","easy","meal","Mix tuna with mayo|Spread onto bread and top with cheese|Broil until melted and bubbly"),
+meal("l4","🌯 Chicken Caesar Wrap","lunch","Chicken,Tortilla,Salad,Cheese","quick","easy","meal","Slice grilled chicken|Toss with salad and cheese|Roll tightly in a tortilla"),
+meal("l5","🥪 BLT Sandwich","lunch","Bacon,Tomato,Salad,Bread,Mayo","quick","easy","meal","Cook bacon until crisp|Spread mayo on toasted bread|Layer bacon, tomato and salad"),
+meal("l6","🥑 Turkey Avocado Sandwich","lunch","Turkey,Avocado,Bread,Tomato","quick","easy","meal","Mash avocado and spread on bread|Layer turkey and tomato|Close sandwich and slice"),
+meal("l7","🧀 Grilled Cheese & Tomato","lunch","Cheese,Bread,Tomato,Butter","quick","easy","meal,snack","Butter the outside of the bread|Layer cheese and tomato inside|Grill until golden and melted"),
+meal("l8","🥗 Mediterranean Chickpea Salad","lunch","Chickpeas,Tomato,Onion,Lemon","quick","easy","meal","Toss chickpeas with tomato and onion|Dress with lemon juice|Chill briefly before serving"),
+meal("l9","🥣 Lemon Quinoa Veggie Bowl","lunch","Quinoa,Broccoli,Peppers,Lemon","normal","easy","meal","Cook the quinoa|Steam broccoli and peppers|Toss together with lemon juice"),
+meal("l10","🧀 Chicken Quesadilla","lunch","Chicken,Cheese,Tortilla","quick","easy","meal,starving","Shred cooked chicken|Layer chicken and cheese in a tortilla|Toast until crispy and melted"),
+meal("l11","🥪 Ham & Cheese Sandwich","lunch","Ham,Cheese,Bread,Mayo","quick","easy","meal,snack","Spread mayo on the bread|Layer ham and cheese|Close and slice diagonally"),
+meal("l12","🥪 Classic Egg Salad Sandwich","lunch","Eggs,Mayo,Bread,Onion","quick","easy","meal","Boil and chop the eggs|Mix with mayo and diced onion|Spread on bread and serve"),
+meal("l13","🌮 Zesty Shrimp Tacos","lunch","Shrimp,Tortilla,Salad,Lemon","quick","medium","meal","Sauté the shrimp until pink|Warm the tortillas|Fill with shrimp, salad and a squeeze of lemon"),
+meal("l14","🥣 Beef Burrito Bowl","lunch","Beef,Rice,Beans,Cheese","normal","medium","meal,starving","Cook and season the beef|Warm the rice and beans|Build the bowl and top with cheese"),
+meal("l15","🍲 Garlic Lentil Soup","lunch","Lentils,Onion,Garlic,Tomato","normal","easy","meal","Sauté onion and garlic|Add lentils and tomato with water|Simmer until lentils are tender"),
+meal("l16","🧀 Black Bean Quesadilla","lunch","Beans,Cheese,Tortilla,Peppers","quick","easy","meal","Mash the black beans lightly|Layer with cheese and peppers in a tortilla|Toast until crispy"),
+meal("l17","🥘 Chicken Fajita Bowl","lunch","Chicken,Peppers,Onion,Rice","normal","medium","meal,starving","Sauté chicken with peppers and onion|Cook the rice|Combine in a bowl and serve"),
+meal("l18","🥗 Lemon Salmon Salad","lunch","Salmon,Salad,Lemon,Avocado","normal","medium","meal","Pan-sear the salmon|Toss salad with avocado|Top with salmon and a squeeze of lemon"),
+meal("l19","🍲 Turkey Chili Bowl","lunch","Turkey,Beans,Tomato,Onion","normal","medium","meal,starving","Brown the turkey with onion|Add beans and tomato|Simmer until thickened"),
+meal("l20","🌯 Mediterranean Chickpea Wrap","lunch","Chickpeas,Tortilla,Tomato,Salad","quick","easy","meal","Mash chickpeas lightly with seasoning|Layer with tomato and salad|Roll up in a tortilla"),
+meal("l21","🍚 Pork Fried Rice","lunch","Pork,Rice,Eggs,Onion","normal","medium","meal,starving","Brown the pork and set aside|Fry rice with onion and egg|Stir pork back in to finish"),
+meal("l22","🥪 Caprese Sandwich","lunch","Tomato,Cheese,Bread,Lemon","quick","easy","meal,snack","Slice tomato and cheese|Layer on bread with a squeeze of lemon|Press lightly and serve"),
+meal("l23","🥘 Garlic Tofu Veggie Bowl","lunch","Tofu,Rice,Broccoli,Garlic","normal","medium","meal","Pan-fry tofu with garlic|Steam the broccoli|Serve both over rice"),
+meal("l24","🍲 Classic Chicken Noodle Soup","lunch","Chicken,Pasta,Onion,Garlic","normal","easy","meal","Sauté onion and garlic|Simmer chicken in broth until cooked|Add pasta and cook until tender"),
+meal("l25","🌯 Buffalo Chicken Wrap","lunch","Chicken,Tortilla,Cheese,Spicy","quick","easy","meal,starving","Toss shredded chicken in spicy sauce|Add cheese|Roll tightly in a tortilla"),
+
+// ---- Dinner (45) ----
+meal("d1","🔥 Spicy Chicken Rice Bowl","dinner","Chicken,Rice,Spicy,Vegetables","quick","easy","meal,starving","Cook chicken until browned|Add vegetables and spicy seasoning|Serve over rice"),
+meal("d2","🥘 Classic Beef Stir Fry","dinner","Beef,Peppers,Onion,Rice","normal","medium","meal,starving","Sear the beef strips|Stir fry with peppers and onion|Serve over rice"),
+meal("d3","🍝 Garlic Butter Shrimp Pasta","dinner","Shrimp,Pasta,Garlic,Butter","normal","medium","meal","Boil the pasta|Sauté shrimp in garlic butter|Toss pasta through the shrimp"),
+meal("d4","🐟 Baked Salmon & Broccoli","dinner","Salmon,Broccoli,Lemon,Butter","normal","medium","meal,healthy","Season the salmon|Roast with broccoli and butter|Finish with a squeeze of lemon"),
+meal("d5","🍝 Chicken Parmesan","dinner","Chicken,Cheese,Pasta,Tomato","slow","medium","meal,starving","Bread and pan-fry the chicken|Top with tomato sauce and cheese|Bake and serve over pasta"),
+meal("d6","🌮 Beef Tacos","dinner","Beef,Tortilla,Cheese,Onion","quick","easy","meal,starving","Brown the beef with onion|Warm the tortillas|Fill with beef and cheese"),
+meal("d7","🥔 Loaded Baked Potato","dinner","Potatoes,Bacon,Cheese,Butter","normal","easy","meal,comfort","Bake the potato until soft|Crisp the bacon|Top potato with butter, cheese and bacon"),
+meal("d8","🍖 Pork Chops & Sweet Potato","dinner","Pork,Sweet Potato,Onion,Garlic","slow","medium","meal,starving","Sear the pork chops|Roast sweet potato with onion and garlic|Plate together"),
+meal("d9","🍚 Chicken Fried Rice","dinner","Chicken,Rice,Eggs,Onion","quick","easy","meal,starving","Cook the chicken and set aside|Fry rice with onion and egg|Stir chicken back in"),
+meal("d10","🌶 Sausage & Peppers Skillet","dinner","Sausage,Peppers,Onion,Rice","normal","easy","meal,starving","Brown the sausage|Sauté peppers and onion together|Serve over rice"),
+meal("d11","🥢 Shrimp Stir Fry","dinner","Shrimp,Vegetables,Garlic,Rice","quick","medium","meal","Stir fry shrimp with garlic|Add vegetables until crisp-tender|Serve over rice"),
+meal("d12","🍖 Turkey Meatloaf","dinner","Turkey,Onion,Garlic,Tomato","slow","medium","meal","Mix turkey with onion and garlic|Shape into a loaf topped with tomato|Bake until cooked through"),
+meal("d13","🥦 Beef & Broccoli","dinner","Beef,Broccoli,Garlic,Rice","normal","medium","meal,starving","Sear the beef strips|Stir fry with broccoli and garlic|Serve over rice"),
+meal("d14","🍝 Chicken Alfredo","dinner","Chicken,Pasta,Cheese,Butter","normal","medium","meal,starving","Cook the chicken and slice|Toss pasta in a buttery cheese sauce|Top with chicken"),
+meal("d15","🥘 Tofu Stir Fry","dinner","Tofu,Vegetables,Garlic,Rice","normal","medium","meal,healthy","Pan-fry the tofu until golden|Stir fry with vegetables and garlic|Serve over rice"),
+meal("d16","🌮 Fish Tacos","dinner","Fish,Tortilla,Salad,Lemon","normal","medium","meal","Pan-sear the fish|Warm the tortillas|Fill with fish, salad and lemon"),
+meal("d17","🌶 Beef Chili","dinner","Beef,Beans,Tomato,Onion","slow","medium","meal,starving","Brown the beef with onion|Add beans and tomato|Simmer until thick and rich"),
+meal("d18","🌯 Chicken Fajitas","dinner","Chicken,Peppers,Onion,Tortilla","normal","medium","meal,starving","Sauté chicken with peppers and onion|Warm the tortillas|Build fajitas at the table"),
+meal("d19","🍠 Baked Ham & Sweet Potato","dinner","Ham,Sweet Potato,Onion,Butter","slow","easy","meal","Roast the sweet potato with onion|Warm the ham|Finish sweet potato with butter"),
+meal("d20","🍄 Garlic Chicken & Mushrooms","dinner","Chicken,Mushrooms,Garlic,Butter","normal","medium","meal","Sear the chicken|Sauté mushrooms and garlic in butter|Spoon mushrooms over chicken"),
+meal("d21","🍝 Spaghetti & Meat Sauce","dinner","Beef,Pasta,Tomato,Garlic","normal","medium","meal,starving,comfort","Brown the beef with garlic|Simmer in tomato sauce|Toss with cooked spaghetti"),
+meal("d22","🧀 Cheesy Chicken Rice Skillet","dinner","Chicken,Rice,Cheese,Onion","quick","easy","meal,starving,comfort","Cook chicken with onion|Stir in cooked rice|Top with melted cheese"),
+meal("d23","🍋 Lemon Garlic Salmon","dinner","Salmon,Garlic,Lemon,Vegetables","normal","medium","meal,healthy","Season the salmon with garlic|Pan-sear until flaky|Serve with roasted vegetables and lemon"),
+meal("d24","🍲 Sausage & Bean Stew","dinner","Sausage,Beans,Tomato,Onion","slow","medium","meal,starving","Brown the sausage with onion|Add beans and tomato|Simmer until stew thickens"),
+meal("d25","🌮 Beef Quesadilla","dinner","Beef,Cheese,Tortilla,Onion","quick","easy","meal,starving","Cook beef with onion|Layer with cheese in a tortilla|Toast until crispy"),
+meal("d26","🍛 Chicken Curry Bowl","dinner","Chicken,Rice,Onion,Spicy","normal","medium","meal,starving","Sauté onion until soft|Simmer chicken in spicy curry sauce|Serve over rice"),
+meal("d27","🍝 Shrimp Scampi","dinner","Shrimp,Pasta,Garlic,Butter","quick","medium","meal","Boil the pasta|Sauté shrimp in garlic butter|Toss together and serve"),
+meal("d28","🍜 Pork Fried Noodles","dinner","Pork,Pasta,Vegetables,Garlic","normal","medium","meal,starving","Cook the pasta|Stir fry pork with garlic and vegetables|Toss noodles through"),
+meal("d29","🥢 Turkey Stir Fry","dinner","Turkey,Vegetables,Garlic,Rice","quick","medium","meal,healthy","Stir fry turkey with garlic|Add vegetables until tender|Serve over rice"),
+meal("d30","🍗 Baked Chicken Thighs & Potatoes","dinner","Chicken,Potatoes,Onion,Garlic","slow","easy","meal,starving,family","Season chicken thighs|Roast with potatoes, onion and garlic|Bake until golden"),
+meal("d31","🥘 Beef Fajita Bowl","dinner","Beef,Peppers,Onion,Rice","normal","medium","meal,starving","Sear beef with peppers and onion|Cook the rice|Combine in a bowl"),
+meal("d32","🍝 Garlic Butter Salmon Pasta","dinner","Salmon,Pasta,Garlic,Butter","normal","medium","meal","Boil the pasta|Pan-sear salmon in garlic butter|Flake salmon through the pasta"),
+meal("d33","🌯 Chicken Enchiladas","dinner","Chicken,Tortilla,Cheese,Tomato","slow","medium","meal,starving,family","Shred cooked chicken|Roll into tortillas with cheese|Bake covered in tomato sauce"),
+meal("d34","🍛 Lentil & Vegetable Curry","dinner","Lentils,Vegetables,Onion,Spicy","normal","easy","meal,healthy","Sauté onion until soft|Add lentils, vegetables and spices|Simmer until lentils are tender"),
+meal("d35","🥓 Bacon Wrapped Chicken","dinner","Chicken,Bacon,Cheese,Garlic","slow","medium","meal,starving","Season chicken with garlic|Wrap in bacon|Bake until bacon is crisp and cheese melted"),
+meal("d36","🌶 Sweet & Spicy Shrimp","dinner","Shrimp,Honey,Spicy,Rice","quick","medium","meal","Sauté shrimp until pink|Toss in a sweet and spicy glaze|Serve over rice"),
+meal("d37","🌮 Turkey Tacos","dinner","Turkey,Tortilla,Cheese,Onion","quick","easy","meal,starving,family","Brown the turkey with onion|Warm the tortillas|Fill with turkey and cheese"),
+meal("d38","🥔 Beef & Potato Skillet","dinner","Beef,Potatoes,Onion,Garlic","normal","medium","meal,starving,comfort","Brown the beef|Add potatoes, onion and garlic|Cook until potatoes are tender"),
+meal("d39","🍛 Chickpea Curry","dinner","Chickpeas,Onion,Spicy,Rice","normal","easy","meal,healthy","Sauté onion until soft|Simmer chickpeas in spicy sauce|Serve over rice"),
+meal("d40","🥗 Grilled Chicken Salad Dinner","dinner","Chicken,Salad,Avocado,Lemon","normal","easy","meal,healthy","Grill and slice the chicken|Toss salad with avocado|Top with chicken and a squeeze of lemon"),
+meal("d41","🧀 Cheesy Beef Pasta Bake","dinner","Beef,Pasta,Cheese,Tomato","slow","medium","meal,starving,comfort,family","Brown the beef|Mix with pasta and tomato sauce|Top with cheese and bake until bubbly"),
+meal("d42","🥩 Garlic Herb Pork Tenderloin","dinner","Pork,Garlic,Sweet Potato,Butter","slow","hard","meal,starving","Season pork with garlic|Roast alongside sweet potato|Rest before slicing and serving"),
+meal("d43","🍛 Chicken Tikka Bowl","dinner","Chicken,Rice,Spicy,Onion","normal","medium","meal,starving","Marinate and cook chicken with spices|Sauté onion|Serve chicken over rice"),
+meal("d44","🥘 Baked Tofu & Vegetables","dinner","Tofu,Vegetables,Garlic,Rice","normal","easy","meal,healthy","Roast tofu with garlic until golden|Roast vegetables alongside|Serve over rice"),
+meal("d45","🍚 Smoky Sausage Rice Skillet","dinner","Sausage,Rice,Peppers,Onion","normal","easy","meal,starving","Brown the sausage|Sauté peppers and onion|Stir in cooked rice to finish"),
+
+// ---- Quick 15-Minute (20) ----
+meal("q1","🍳 5-Minute Egg Toast","quick","Eggs,Bread,Butter","quick","easy","snack,meal,starving","Toast the bread|Fry the egg in butter|Place egg on toast and serve"),
+meal("q2","🧀 Quick Chicken Quesadilla","quick","Chicken,Cheese,Tortilla","quick","easy","meal,starving","Shred pre-cooked chicken|Layer with cheese in a tortilla|Toast until crispy"),
+meal("q3","🥪 Speedy Tuna Sandwich","quick","Tuna,Mayo,Bread","quick","easy","meal,starving","Mix tuna with mayo|Spread onto bread|Slice and serve"),
+meal("q4","🥑 Instant Avocado Salad","quick","Avocado,Tomato,Lemon","quick","easy","snack,meal","Dice avocado and tomato|Toss together|Finish with a squeeze of lemon"),
+meal("q5","🌯 Fast Ham & Cheese Wrap","quick","Ham,Cheese,Tortilla","quick","easy","meal,starving","Layer ham and cheese on a tortilla|Roll tightly|Slice and serve"),
+meal("q6","🧀 Microwave Beans & Cheese","quick","Beans,Cheese,Tomato","quick","easy","snack,meal","Warm the beans|Top with cheese and diced tomato|Microwave until cheese melts"),
+meal("q7","🦐 Quick Garlic Shrimp","quick","Shrimp,Garlic,Butter","quick","medium","meal,starving","Melt butter with garlic|Add shrimp and cook until pink|Serve immediately"),
+meal("q8","🥜 5-Minute Peanut Butter Toast","quick","Bread,Peanut Butter,Honey","quick","easy","snack","Toast the bread|Spread peanut butter|Drizzle with honey"),
+meal("q9","🍚 Speedy Egg Fried Rice","quick","Eggs,Rice,Onion","quick","easy","meal,starving","Scramble the eggs|Fry rice with onion|Stir eggs back through"),
+meal("q10","🌯 Quick Turkey Wrap","quick","Turkey,Tortilla,Cheese","quick","easy","meal,starving","Layer turkey and cheese on a tortilla|Roll tightly|Slice and serve"),
+meal("q11","🍜 Instant Noodle Upgrade","quick","Pasta,Eggs,Vegetables","quick","easy","meal,starving","Boil the pasta|Stir in a beaten egg while hot|Add vegetables and toss"),
+meal("q12","🥗 Fast Chickpea Snack Bowl","quick","Chickpeas,Tomato,Lemon","quick","easy","snack,meal","Drain and rinse chickpeas|Toss with diced tomato|Finish with lemon juice"),
+meal("q13","🥓 Quick Bacon & Eggs","quick","Bacon,Eggs,Bread","quick","easy","meal,starving","Cook the bacon until crisp|Fry the eggs|Serve with toasted bread"),
+meal("q14","🐟 Speedy Salmon Toast","quick","Salmon,Bread,Lemon","quick","easy","meal","Toast the bread|Flake salmon over the top|Finish with a squeeze of lemon"),
+meal("q15","🍶 5-Minute Yogurt Bowl","quick","Yogurt,Honey,Oats","quick","easy","snack","Spoon yogurt into a bowl|Stir in honey|Top with oats"),
+meal("q16","🥗 Quick Chicken Salad Cups","quick","Chicken,Salad,Mayo","quick","easy","meal,starving","Shred pre-cooked chicken|Mix with mayo|Serve over salad"),
+meal("q17","🧀 Fast Veggie Quesadilla","quick","Cheese,Tortilla,Peppers","quick","easy","meal,snack","Layer cheese and peppers on a tortilla|Fold in half|Toast until crispy"),
+meal("q18","🍚 Instant Cheesy Rice","quick","Rice,Cheese,Butter","quick","easy","snack,meal","Warm the cooked rice|Stir in butter|Mix in cheese until melted"),
+meal("q19","🌶 Quick Sausage Bites","quick","Sausage,Peppers,Onion","quick","easy","meal,starving","Slice the sausage|Sauté with peppers and onion|Serve hot"),
+meal("q20","🌯 Speedy Beef Wrap","quick","Beef,Tortilla,Cheese","quick","easy","meal,starving","Slice pre-cooked beef|Layer with cheese in a tortilla|Roll and serve"),
+
+// ---- Snacks (15) ----
+meal("s1","🥜 Peanut Butter Honey Bites","snack","Peanut Butter,Honey,Oats","quick","easy","snack","Mix peanut butter, honey and oats|Roll into small bites|Chill until firm"),
+meal("s2","🧀 Cheese & Toast Bites","snack","Cheese,Bread","quick","easy","snack","Cut bread into small squares|Top each with cheese|Toast until melted"),
+meal("s3","🥙 Chickpea Hummus & Veggies","snack","Chickpeas,Lemon,Garlic,Vegetables","quick","easy","snack,healthy","Blend chickpeas with lemon and garlic|Adjust to a smooth dip|Serve with sliced vegetables"),
+meal("s4","🍯 Yogurt & Honey Cup","snack","Yogurt,Honey","quick","easy","snack","Spoon yogurt into a cup|Drizzle with honey|Serve chilled"),
+meal("s5","🌶 Spicy Roasted Chickpeas","snack","Chickpeas,Spicy","normal","easy","snack,healthy","Toss chickpeas in spicy seasoning|Roast until crunchy|Cool slightly before serving"),
+meal("s6","🥓 Bacon Cheese Bites","snack","Bacon,Cheese","normal","easy","snack","Crisp the bacon|Cut into small pieces|Top with melted cheese"),
+meal("s7","🍳 Egg & Cheese Snack Cups","snack","Eggs,Cheese","normal","easy","snack","Whisk eggs with cheese|Pour into small cups|Bake until set"),
+meal("s8","🍠 Sweet Potato Fries","snack","Sweet Potato,Spicy","normal","easy","snack,healthy","Slice sweet potato into fries|Toss with spicy seasoning|Roast until crisp"),
+meal("s9","🍫 Chocolate Peanut Butter Bites","snack","Chocolate,Peanut Butter","quick","easy","snack","Melt chocolate and peanut butter together|Spoon into small molds|Chill until firm"),
+meal("s10","🍅 Garlic Tomato Toast","snack","Tomato,Garlic,Bread","quick","easy","snack","Toast the bread|Rub with garlic|Top with diced tomato"),
+meal("s11","🦃 Mini Turkey Roll-Ups","snack","Turkey,Cheese","quick","easy","snack","Lay out turkey slices|Add a strip of cheese|Roll up tightly"),
+meal("s12","🍅 Fresh Tomato & Onion Salad","snack","Tomato,Onion,Lemon","quick","easy","snack,healthy","Dice tomato and onion|Toss together|Finish with lemon juice"),
+meal("s13","🥣 Cinnamon Oat Bites","snack","Oats,Cinnamon,Honey","quick","easy","snack","Mix oats with cinnamon and honey|Press into small bites|Chill until firm"),
+meal("s14","🍄 Cheesy Mushroom Bites","snack","Mushrooms,Cheese,Garlic","normal","easy","snack","Sauté mushrooms with garlic|Top with cheese|Broil until melted"),
+meal("s15","🌽 Spicy Corn Snack Cup","snack","Corn,Spicy,Lemon","quick","easy","snack,healthy","Warm the corn|Toss with spicy seasoning|Finish with a squeeze of lemon"),
+
+// ---- Comfort Food (10) ----
+meal("c1","🧀 Classic Mac & Cheese","comfort","Pasta,Cheese,Butter,Milk","normal","easy","meal,starving,family","Boil the pasta|Melt butter, milk and cheese into a sauce|Toss pasta through the cheese sauce"),
+meal("c2","🥧 Creamy Chicken Pot Pie Bowl","comfort","Chicken,Potatoes,Vegetables,Butter","slow","medium","meal,starving,family","Cook chicken and potatoes|Add vegetables and a buttery sauce|Simmer until thick and creamy"),
+meal("c3","🌮 Loaded Nachos","comfort","Beans,Cheese,Tomato,Spicy","normal","easy","meal,starving,family","Warm the beans|Layer over chips with cheese|Top with tomato and spicy seasoning"),
+meal("c4","🧀 Cheesy Beef & Rice Casserole","comfort","Beef,Rice,Cheese,Onion","slow","medium","meal,starving,family","Brown the beef with onion|Mix with cooked rice|Top with cheese and bake until bubbly"),
+meal("c5","🥔 Buttery Garlic Mashed Potatoes","comfort","Potatoes,Butter,Garlic,Milk","normal","easy","meal,family","Boil the potatoes until soft|Mash with butter and milk|Stir in roasted garlic"),
+meal("c6","🥓 Bacon Cheese Fries","comfort","Potatoes,Bacon,Cheese","normal","easy","meal,starving,family","Bake or fry the potatoes|Crisp the bacon|Top fries with cheese and bacon"),
+meal("c7","🍝 Creamy Chicken Alfredo Bake","comfort","Chicken,Pasta,Cheese,Butter","slow","medium","meal,starving,family","Cook chicken and pasta|Toss in a buttery cheese sauce|Bake until golden on top"),
+meal("c8","🍅 Sloppy Joe Bowl","comfort","Beef,Tomato,Onion,Bread","normal","easy","meal,starving,family","Brown the beef with onion|Simmer in a tomato sauce|Serve over torn bread"),
+meal("c9","🧀 Cheesy Sausage Casserole","comfort","Sausage,Rice,Cheese,Onion","slow","medium","meal,starving,family","Brown the sausage with onion|Mix with cooked rice|Top with cheese and bake"),
+meal("c10","🧀 Classic Grilled Cheese & Bacon","comfort","Cheese,Bacon,Bread,Butter","quick","easy","meal,snack,starving","Cook the bacon until crisp|Butter the bread and add cheese and bacon|Grill until golden and melted"),
+
+// ---- Healthy (10) ----
+meal("h1","🥗 Grilled Chicken & Quinoa Bowl","healthy","Chicken,Quinoa,Broccoli,Lemon","normal","medium","meal","Grill and slice the chicken|Cook the quinoa|Combine with steamed broccoli and lemon"),
+meal("h2","🐟 Baked Salmon & Spinach","healthy","Salmon,Spinach,Lemon,Garlic","normal","medium","meal","Season the salmon with garlic|Bake until flaky|Serve over wilted spinach with lemon"),
+meal("h3","🥗 Chickpea Power Salad","healthy","Chickpeas,Salad,Tomato,Lemon","quick","easy","meal","Drain and rinse the chickpeas|Toss with salad and tomato|Dress with lemon juice"),
+meal("h4","🥗 Turkey Salad Wraps","healthy","Turkey,Salad,Tomato,Onion","quick","easy","meal","Slice the turkey|Toss salad with tomato and onion|Wrap turkey and salad together"),
+meal("h5","🥢 Tofu Veggie Stir Fry","healthy","Tofu,Broccoli,Garlic,Vegetables","normal","medium","meal","Pan-fry the tofu until golden|Stir fry with garlic|Add broccoli and vegetables until tender"),
+meal("h6","🍲 Lentil Spinach Bowl","healthy","Lentils,Spinach,Garlic,Lemon","normal","easy","meal","Simmer lentils with garlic|Stir in spinach until wilted|Finish with a squeeze of lemon"),
+meal("h7","🍳 Veggie Egg Scramble","healthy","Eggs,Spinach,Mushrooms,Tomato","quick","easy","meal,snack","Sauté mushrooms and spinach|Add diced tomato|Scramble eggs through the vegetables"),
+meal("h8","🥗 Grilled Shrimp Salad","healthy","Shrimp,Salad,Avocado,Lemon","normal","medium","meal","Grill the shrimp|Toss salad with avocado|Top with shrimp and lemon"),
+meal("h9","🥣 Quinoa Chickpea Salad","healthy","Quinoa,Chickpeas,Tomato,Lemon","normal","easy","meal","Cook the quinoa|Toss with chickpeas and tomato|Dress with lemon juice"),
+meal("h10","🐟 Baked Fish & Broccoli","healthy","Fish,Broccoli,Lemon,Garlic","normal","medium","meal","Season the fish with garlic|Bake alongside broccoli|Finish with a squeeze of lemon"),
+
+// ---- Family / Kid Friendly (15) ----
+meal("f1","🍚 Baked Chicken Bites & Rice","family","Chicken,Rice,Cheese","normal","easy","meal,starving","Cut chicken into bite-size pieces|Bake until golden|Serve over cheesy rice"),
+meal("f2","🧀 Kid-Friendly Mac & Cheese","family","Pasta,Cheese,Milk,Butter","normal","easy","meal,starving","Boil the pasta|Melt butter, milk and cheese into a sauce|Toss pasta through the sauce"),
+meal("f3","🧀 Mini Cheese Quesadillas","family","Cheese,Tortilla","quick","easy","snack,meal","Layer cheese in small tortillas|Fold in half|Toast until melted and crispy"),
+meal("f4","🦃 Turkey & Cheese Pinwheels","family","Turkey,Cheese,Tortilla","quick","easy","snack,meal","Layer turkey and cheese on a tortilla|Roll up tightly|Slice into pinwheels"),
+meal("f5","🍳 Soft Scrambled Eggs & Toast","family","Eggs,Bread,Butter","quick","easy","snack,meal","Melt butter in a pan|Gently scramble the eggs|Serve with buttered toast"),
+meal("f6","🥦 Cheesy Broccoli Rice","family","Rice,Broccoli,Cheese,Butter","normal","easy","meal","Cook the rice|Steam the broccoli|Stir both with butter and melted cheese"),
+meal("f7","🍠 Baked Sweet Potato Bites","family","Sweet Potato,Cheese","normal","easy","snack,meal","Cut sweet potato into small bites|Roast until soft|Top with melted cheese"),
+meal("f8","🥜 Peanut Butter Honey Sandwich","family","Bread,Peanut Butter,Honey","quick","easy","snack,meal","Spread peanut butter on one slice|Drizzle honey on the other|Press together and slice"),
+meal("f9","🍝 Buttery Garlic Spaghetti","family","Pasta,Butter,Garlic,Cheese","quick","easy","meal","Boil the spaghetti|Toss with butter and garlic|Finish with grated cheese"),
+meal("f10","🍗 Baked Chicken Tenders & Potatoes","family","Chicken,Potatoes,Cheese","normal","easy","meal,starving","Cut chicken into tenders and bake|Roast the potatoes|Sprinkle both with cheese to serve"),
+meal("f11","🧀 Cheese Quesadilla Strips","family","Cheese,Tortilla,Tomato","quick","easy","snack,meal","Layer cheese and diced tomato in a tortilla|Fold and toast|Slice into strips"),
+meal("f12","🍶 Yogurt & Honey Cinnamon Bowl","family","Yogurt,Honey,Cinnamon","quick","easy","snack","Spoon yogurt into a bowl|Drizzle with honey|Dust with cinnamon"),
+meal("f13","🦃 Ham & Cheese Pinwheels","family","Ham,Cheese,Tortilla","quick","easy","snack,meal","Layer ham and cheese on a tortilla|Roll up tightly|Slice into pinwheels"),
+meal("f14","🍚 Simple Beef & Rice Bowl","family","Beef,Rice,Cheese","normal","easy","meal,starving","Brown the beef|Cook the rice|Combine and top with cheese"),
+meal("f15","🍳 Cheesy Egg Muffins","family","Eggs,Cheese,Peppers","normal","easy","snack,meal","Whisk eggs with diced peppers|Pour into a muffin tin with cheese|Bake until set")
+
+];
+
+const MEALS_BY_ID = Object.fromEntries(MEALS.map(m=>[m.id, m]));
+
+const CATEGORY_LABELS = {
+  breakfast:"Breakfast", lunch:"Lunch", dinner:"Dinner", quick:"Quick 15-Minute",
+  snack:"Snacks", comfort:"Comfort Food", healthy:"Healthy", family:"Family / Kid Friendly"
+};
+
+
+let likes=[];
+let dislikes=[];
+let pantry=[];
+let grocery=[];
+
+// Personal meal reviews — stay on this device only (localStorage), keyed by meal id
+let reviews = JSON.parse(localStorage.getItem("foodReviews")) || {};
+
+
+const likesBox=document.getElementById("likes");
+const dislikesBox=document.getElementById("dislikes");
+
+
+function createButtons(){
+
+Object.entries(INGREDIENT_GROUPS).forEach(([groupName, foods])=>{
+
+let likeHeader=document.createElement("div");
+likeHeader.className="group-title";
+likeHeader.textContent=groupName;
+likesBox.appendChild(likeHeader);
+
+let likeRow=document.createElement("div");
+likeRow.className="tags";
+likesBox.appendChild(likeRow);
+
+let dislikeHeader=document.createElement("div");
+dislikeHeader.className="group-title";
+dislikeHeader.textContent=groupName;
+dislikesBox.appendChild(dislikeHeader);
+
+let dislikeRow=document.createElement("div");
+dislikeRow.className="tags";
+dislikesBox.appendChild(dislikeRow);
+
+foods.forEach(food=>{
+
+let good=document.createElement("span");
+good.textContent=food;
+
+good.onclick=()=>{
+good.classList.toggle("active");
+if(good.classList.contains("active")){
+if(!likes.includes(food)) likes.push(food);
+}else{
+likes=likes.filter(x=>x!==food);
+}
+};
+
+likeRow.appendChild(good);
+
+let bad=document.createElement("span");
+bad.textContent=food;
+bad.className="bad";
+
+bad.onclick=()=>{
+bad.classList.toggle("active");
+if(bad.classList.contains("active")){
+if(!dislikes.includes(food)) dislikes.push(food);
+}else{
+dislikes=dislikes.filter(x=>x!==food);
+}
+};
+
+dislikeRow.appendChild(bad);
+
+});
+
+});
+
+}
+
+
+function addPantry(){
+
+let value=document.getElementById("pantryInput").value;
+
+if(value){
+pantry.push(...value.split(",").map(x=>x.trim()).filter(Boolean));
+}
+
+document.getElementById("pantryInput").value="";
+showPantry();
+
+}
+
+
+function showPantry(){
+
+document.getElementById("pantryList").innerHTML=
+pantry.map(x=>`<div class="meal">🧺 ${x}</div>`).join("");
+
+}
+
+
+function escapeHtml(str){
+let div=document.createElement("div");
+div.textContent=str;
+return div.innerHTML;
+}
+
+
+// ---------- Free-text query parser ----------
+// Reads hunger level, cook-time preference, category, dislikes,
+// likes and pantry items straight out of a plain sentence like:
+// "I'm starving. I hate mayo. I have chicken, rice and cheese."
+
+function parseQuery(text){
+
+const lower = " " + text.toLowerCase() + " ";
+const result = {dislikes:[], likes:[], pantry:[], hunger:null, time:null, category:null};
+
+if(/starving|so hungry|need food now|really hungry|extremely hungry/.test(lower)) result.hunger="starving";
+else if(/snack|little hungry|light bite|not that hungry/.test(lower)) result.hunger="snack";
+else if(/hungry|meal|dinner|lunch time/.test(lower)) result.hunger="meal";
+
+if(/quick|fast|15 min|no time|in a hurry/.test(lower)) result.time="quick";
+else if(/slow|want to cook|take my time|all afternoon/.test(lower)) result.time="slow";
+
+const catMap = {breakfast:"breakfast", lunch:"lunch", dinner:"dinner", snack:"snack", comfort:"comfort", healthy:"healthy", "kid friendly":"family", kid:"family", family:"family"};
+for(const key in catMap){
+if(lower.includes(key)){ result.category = catMap[key]; break; }
+}
+
+const triggers = [
+{type:"dislike", re:/\b(hate|dislike|allergic to|can.?t eat|don.?t like)\b/g},
+{type:"like", re:/\b(love|like)\b/g},
+{type:"have", re:/\b(have|with|got)\b/g}
+];
+
+let marks=[];
+triggers.forEach(t=>{
+let m;
+t.re.lastIndex=0;
+while((m=t.re.exec(lower))){
+marks.push({index:m.index, type:t.type});
+}
+});
+marks.sort((a,b)=>a.index-b.index);
+
+marks.forEach((mk,i)=>{
+let end = i+1<marks.length ? marks[i+1].index : lower.length;
+let segment = lower.slice(mk.index, end);
+ALL_INGREDIENTS.forEach(ing=>{
+if(segment.includes(ing.toLowerCase())){
+if(mk.type==="dislike" && !result.dislikes.includes(ing)) result.dislikes.push(ing);
+if(mk.type==="like" && !result.likes.includes(ing)) result.likes.push(ing);
+if(mk.type==="have" && !result.pantry.includes(ing)) result.pantry.push(ing);
+}
+});
+});
+
+return result;
+
+}
+
+
+// ---------- Personal meal reviews (localStorage, per device) ----------
+
+function getReviews(mealId){
+return reviews[mealId] || [];
+}
+
+function getAverage(mealId){
+let list=getReviews(mealId);
+if(list.length===0) return null;
+let sum=list.reduce((a,r)=>a+r.stars,0);
+return (sum/list.length).toFixed(1);
+}
+
+function starRow(mealKey, currentStars, interactive){
+
+let html=`<div class="stars" data-meal="${mealKey}">`;
+
+for(let i=1;i<=5;i++){
+let filled = i<=currentStars ? "filled" : "";
+if(interactive){
+html+=`<span class="${filled}" onclick="setStars('${mealKey}', ${i})">★</span>`;
+}else{
+html+=`<span class="${filled}">★</span>`;
+}
+}
+
+html+=`</div>`;
+return html;
+
+}
+
+let pendingStars={};
+
+function setStars(mealKey, value){
+
+pendingStars[mealKey]=value;
+
+document.querySelectorAll(`.stars[data-meal="${mealKey}"] span`).forEach((el,i)=>{
+el.classList.toggle("filled", i < value);
+});
+
+}
+
+function submitReview(mealId){
+
+let stars=pendingStars[mealId];
+
+if(!stars){
+alert("Tap a star to rate this meal first.");
+return;
+}
+
+let commentBox=document.getElementById(`comment-${mealId}`);
+let comment=commentBox ? commentBox.value.trim() : "";
+
+if(!reviews[mealId]) reviews[mealId]=[];
+
+reviews[mealId].push({
+stars:stars,
+comment:comment,
+date:new Date().toLocaleDateString()
+});
+
+localStorage.setItem("foodReviews", JSON.stringify(reviews));
+
+delete pendingStars[mealId];
+
+renderResults(lastContext, true);
+renderReviewList();
+
+}
+
+function deleteReview(mealId, index){
+
+if(!reviews[mealId]) return;
+
+reviews[mealId].splice(index,1);
+
+if(reviews[mealId].length===0) delete reviews[mealId];
+
+localStorage.setItem("foodReviews", JSON.stringify(reviews));
+
+renderReviewList();
+renderResults(lastContext, true);
+
+}
+
+function renderReviewList(){
+
+let box=document.getElementById("reviewList");
+let mealIds=Object.keys(reviews);
+
+if(mealIds.length===0){
+box.innerHTML=`<p class="no-reviews">You haven't rated any meals yet. Find a meal and leave a review!</p>`;
+return;
+}
+
+let html="";
+
+mealIds.forEach(mealId=>{
+
+let list=reviews[mealId];
+let mealName = MEALS_BY_ID[mealId] ? MEALS_BY_ID[mealId].name : mealId;
+
+html+=`<div class="meal"><h3>${mealName}</h3>`;
+html+=`<p class="review-summary">⭐ ${getAverage(mealId)} average (${list.length} review${list.length>1?"s":""})</p>`;
+
+list.forEach((r,i)=>{
+html+=`
+<div class="review-entry">
+${starRow(mealId+"-static-"+i, r.stars, false)}
+${r.comment ? `<p>${escapeHtml(r.comment)}</p>` : ""}
+<p class="meta">${r.date}</p>
+<button class="delete-review" onclick="deleteReview('${mealId}', ${i})">Delete</button>
+</div>
+`;
+});
+
+html+=`</div>`;
+
+});
+
+box.innerHTML=html;
+
+}
+
+
+// ---------- Public app reviews (Firestore, shared across everyone) ----------
+
+let appStarPick=0;
+
+function renderAppStarPicker(){
+
+let box=document.getElementById("appStars");
+box.innerHTML="";
+
+for(let i=1;i<=5;i++){
+let span=document.createElement("span");
+span.textContent="★";
+if(i<=appStarPick) span.classList.add("filled");
+span.onclick=()=>{
+appStarPick=i;
+renderAppStarPicker();
+};
+box.appendChild(span);
+}
+
+}
+
+renderAppStarPicker();
+
+function submitAppReview(){
+
+if(!appStarPick){
+alert("Tap a star to rate the app first.");
+return;
+}
+
+let name=document.getElementById("reviewerName").value.trim() || "Anonymous";
+let comment=document.getElementById("appComment").value.trim();
+
+let submitBtn=event.target;
+submitBtn.disabled=true;
+submitBtn.textContent="Posting...";
+
+db.collection("appReviews").add({
+name: name,
+stars: appStarPick,
+comment: comment,
+createdAt: firebase.firestore.FieldValue.serverTimestamp()
+}).then(()=>{
+appStarPick=0;
+renderAppStarPicker();
+document.getElementById("appComment").value="";
+document.getElementById("reviewerName").value="";
+}).catch(err=>{
+alert("Couldn't post your review: " + err.message);
+}).finally(()=>{
+submitBtn.disabled=false;
+submitBtn.textContent="Post Public Review";
+});
+
+}
+
+function listenToAppReviews(){
+
+db.collection("appReviews")
+.orderBy("createdAt","desc")
+.limit(100)
+.onSnapshot(snapshot=>{
+
+let list=[];
+snapshot.forEach(doc=>list.push(doc.data()));
+
+let summary=document.getElementById("appRatingSummary");
+let box=document.getElementById("appReviewList");
+
+if(list.length===0){
+summary.textContent="No reviews yet — be the first!";
+box.innerHTML="";
+return;
+}
+
+let avg=(list.reduce((a,r)=>a+r.stars,0)/list.length).toFixed(1);
+summary.textContent=`⭐ ${avg} average from ${list.length} review${list.length>1?"s":""}`;
+
+box.innerHTML=list.map(r=>`
+<div class="review-entry">
+<div class="stars" style="font-size:16px;letter-spacing:2px;">${"★".repeat(r.stars)}${"☆".repeat(5-r.stars)}</div>
+<p><b>${escapeHtml(r.name || "Anonymous")}</b></p>
+${r.comment ? `<p>${escapeHtml(r.comment)}</p>` : ""}
+</div>
+`).join("");
+
+}, err=>{
+
+document.getElementById("appRatingSummary").textContent=
+"Couldn't load reviews — check your Firebase config and Firestore rules (see SETUP.md).";
+console.error(err);
+
+});
+
+}
+
+
+// ---------- Recommendation engine ----------
+
+function scoreMeal(m, ctx){
+
+// Hard filter: never suggest a meal that contains a disliked ingredient
+if(m.ingredients.some(i=>ctx.dislikes.includes(i))) return null;
+
+// Optional category filter
+if(ctx.category && m.category !== ctx.category) return null;
+
+const total = m.ingredients.length;
+const have = m.ingredients.filter(i=>ctx.pantry.includes(i)).length;
+const liked = m.ingredients.filter(i=>ctx.likes.includes(i)).length;
+
+let score = 10; // base: passed the filters, so it's a reasonable fit
+score += (have/total) * 50;                                   // pantry coverage matters most
+score += (liked/total) * 15;                                  // bonus for ingredients you love
+score += m.hunger.includes(ctx.hunger) ? 15 : 6;               // matches how hungry you are
+score += ctx.time ? (m.time===ctx.time ? 10 : 3) : 7;          // matches cook-time preference
+
+const avg = getAverage(m.id);
+if(avg) score += (parseFloat(avg)/5) * 5;                      // small bonus from your past ratings
+
+return { meal:m, pct: Math.max(1, Math.min(100, Math.round(score))), have, total };
+
+}
+
+let lastContext = null;
+
+function buildContext(){
+
+let parsed = parseQuery(document.getElementById("question").value || "");
+
+// merge free-text parsing with the toggle/dropdown state (union, never replace)
+let ctxDislikes = Array.from(new Set([...dislikes, ...parsed.dislikes]));
+let ctxLikes = Array.from(new Set([...likes, ...parsed.likes]));
+let ctxPantry = Array.from(new Set([...pantry, ...parsed.pantry]));
+
+let hunger = parsed.hunger || document.getElementById("hunger").value;
+let time = parsed.time || document.getElementById("cookTime").value;
+let category = parsed.category || document.getElementById("categoryFilter").value || null;
+
+// reflect anything the sentence taught us back into the pantry list + tag buttons
+if(parsed.pantry.length){
+pantry = ctxPantry;
+showPantry();
+}
+if(parsed.dislikes.length || parsed.likes.length){
+dislikes = ctxDislikes;
+likes = ctxLikes;
+refreshTagButtons();
+}
+
+return { dislikes: ctxDislikes, likes: ctxLikes, pantry: ctxPantry, hunger, time, category };
+
+}
+
+function refreshTagButtons(){
+
+document.querySelectorAll("#likes .tags span").forEach(btn=>{
+btn.classList.toggle("active", likes.includes(btn.textContent));
+});
+
+document.querySelectorAll("#dislikes .tags span").forEach(btn=>{
+btn.classList.toggle("active", dislikes.includes(btn.textContent));
+});
+
+}
+
+function runQuery(){
+lastContext = buildContext();
+renderResults(lastContext, false);
+}
+
+function renderResults(ctx, silent){
+
+if(!ctx) ctx = buildContext();
+lastContext = ctx;
+
+if(!silent){
+document.getElementById("results").innerHTML=`<div class="meal">🧠 Food AI is thinking...</div>`;
+}
+
+let scored = MEALS.map(m=>scoreMeal(m, ctx)).filter(Boolean);
+scored.sort((a,b)=>b.pct-a.pct);
+let top = scored.slice(0,5);
+
+let output="";
+
+if(top.length===0){
+output=`<div class="meal">❌ Nothing in the catalog fits that — try removing a disliked ingredient or opening up the category filter.</div>`;
+}
+else{
+
+top.forEach((entry, index)=>{
+
+let meal = entry.meal;
+let avg = getAverage(meal.id);
+let count = getReviews(meal.id).length;
+let currentPick = pendingStars[meal.id] || 0;
+let missing = meal.ingredients.filter(i=>!ctx.pantry.includes(i));
+
+output+=`
+<div class="meal">
+
+<div class="rank-row">
+<div class="rank-badge">#${index+1}</div>
+<div>
+<h3 style="margin:0">${meal.name}</h3>
+<div class="match-pct">${entry.pct}% match</div>
+</div>
+</div>
+
+<p class="have-count">You have ${entry.have}/${entry.total} ingredients.</p>
+
+<div class="meta-row">
+<span class="pill">${CATEGORY_LABELS[meal.category] || meal.category}</span>
+<span class="pill">${meal.time==="quick"?"~15 min":meal.time==="normal"?"~30 min":"45+ min"}</span>
+<span class="pill">${meal.difficulty}</span>
+${meal.diet.map(d=>`<span class="pill">${d}</span>`).join("")}
+</div>
+
+${avg ? `<p class="review-summary">Rated ${avg}/5 by you (${count} review${count>1?"s":""})</p>` : `<p class="small">Not reviewed yet</p>`}
+
+<p>Ingredients: ${meal.ingredients.join(", ")}</p>
+
+<h4>How To Make It</h4>
+<ul>${meal.steps.map(step=>`<li>${step}</li>`).join("")}</ul>
+
+${missing.length ? `<button onclick="addGrocery('${missing.join(",")}')">🛒 Add Missing Ingredients</button>` : ""}
+
+<div class="review-box">
+<p class="small">Made this? Rate it:</p>
+${starRow(meal.id, currentPick, true)}
+<textarea id="comment-${meal.id}" placeholder="Optional: what did you think?"></textarea>
+<button class="secondary" onclick="submitReview('${meal.id}')">Submit Review</button>
+</div>
+
+</div>
+`;
+
+});
+
+}
+
+document.getElementById("results").innerHTML=output;
+
+}
+
+
+function addGrocery(items){
+
+grocery.push(...items.split(","));
+
+document.getElementById("grocery").innerHTML=
+grocery.map(x=>`<div class="meal">🛒 ${x}</div>`).join("");
+
+}
+
+function clearGrocery(){
+
+grocery=[];
+document.getElementById("grocery").innerHTML="Nothing added yet.";
+
+}
+
+
+createButtons();
+renderReviewList();
+listenToAppReviews();
+
+
+// ===============================
+// FAMILY PROFILE MEMORY SYSTEM
+// ===============================
+
+let profiles = JSON.parse(localStorage.getItem("foodProfiles")) || {};
+let currentProfile = "Me";
+
+
+function saveProfile(){
+
+profiles[currentProfile]={
+likes:likes,
+dislikes:dislikes,
+pantry:pantry
+};
+
+localStorage.setItem("foodProfiles", JSON.stringify(profiles));
+
+alert(currentProfile + " profile saved!");
+
+}
+
+
+function loadProfile(name){
+
+currentProfile=name;
+
+if(profiles[name]){
+likes=profiles[name].likes || [];
+dislikes=profiles[name].dislikes || [];
+pantry=profiles[name].pantry || [];
+}
+else{
+likes=[];
+dislikes=[];
+pantry=[];
+}
+
+document.getElementById("profileName").textContent=currentProfile;
+
+refreshTagButtons();
+showPantry();
+
+}
+
+
+function createProfile(){
+
+let name=prompt("Profile name? Example: Kids, Mom, Guest");
+
+if(!name) return;
+
+currentProfile=name;
+saveProfile();
+document.getElementById("profileName").textContent=currentProfile;
+
+}
+
+
+function addProfileButtons(){
+
+let box=document.createElement("div");
+box.className="card";
+
+box.innerHTML=`
+<h2>Family Profiles</h2>
+<p>Current Profile: <b id="profileName">${currentProfile}</b></p>
+<button onclick="createProfile()"> Create Profile</button>
+<button onclick="loadProfile('Me')"> Me</button>
+<button onclick="loadProfile('Kids')"> Kids</button>
+<button onclick="loadProfile('Guest')"> Guest</button>
+<button onclick="saveProfile()">Save This Profile</button>
+`;
+
+document.querySelector(".app").insertBefore(box, document.querySelector(".card"));
+
+}
+
+addProfileButtons();
+
+</script>
+
+</body>
+</html>
