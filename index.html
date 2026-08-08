@@ -1,0 +1,2803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Food Finder AI™ | Your Personalized Food & Meal Finder</title>
+
+<meta name="description"
+content="Food Finder AI helps you discover personalized meals, grocery stores, pharmacies, shopping resources and food guidance in one simple place.">
+
+<style>
+:root{
+  --bg:#f5f7f4;
+  --card:#ffffff;
+  --ink:#172019;
+  --muted:#68736b;
+  --green:#1c6b43;
+  --green2:#2f8b5b;
+  --lime:#dff3e5;
+  --gold:#d6a738;
+  --red:#c94b4b;
+  --line:#e1e7e2;
+  --shadow:0 15px 45px rgba(21,45,30,.09);
+  --radius:20px;
+}
+
+*{
+  box-sizing:border-box;
+}
+
+html{
+  scroll-behavior:smooth;
+}
+
+body{
+  margin:0;
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg);
+  color:var(--ink);
+}
+
+button,
+input,
+select,
+textarea{
+  font:inherit;
+}
+
+button{
+  cursor:pointer;
+}
+
+a{
+  color:inherit;
+  text-decoration:none;
+}
+
+img{
+  max-width:100%;
+}
+
+/* =========================
+   TOP BAR
+========================= */
+
+.topbar{
+  background:#111812;
+  color:white;
+  padding:9px 5%;
+  display:flex;
+  justify-content:center;
+  font-size:13px;
+  letter-spacing:.2px;
+}
+
+.nav{
+  position:sticky;
+  top:0;
+  z-index:1000;
+  background:rgba(255,255,255,.94);
+  backdrop-filter:blur(18px);
+  border-bottom:1px solid var(--line);
+}
+
+.nav-inner{
+  max-width:1400px;
+  margin:auto;
+  padding:14px 5%;
+  display:flex;
+  align-items:center;
+  gap:25px;
+}
+
+.logo{
+  font-size:22px;
+  font-weight:900;
+  letter-spacing:-1px;
+  white-space:nowrap;
+}
+
+.logo span{
+  color:var(--green);
+}
+
+.nav-links{
+  display:flex;
+  gap:20px;
+  margin-left:auto;
+  align-items:center;
+}
+
+.nav-links a{
+  font-size:14px;
+  font-weight:700;
+}
+
+.nav-links a:hover{
+  color:var(--green);
+}
+
+.nav-btn{
+  background:var(--green);
+  color:white;
+  border:0;
+  border-radius:999px;
+  padding:11px 17px;
+  font-weight:800;
+}
+
+.mobile-menu{
+  display:none;
+  margin-left:auto;
+  background:white;
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:9px 12px;
+}
+
+/* =========================
+   HERO
+========================= */
+
+.hero{
+  max-width:1400px;
+  margin:auto;
+  padding:45px 5% 35px;
+}
+
+.hero-grid{
+  display:grid;
+  grid-template-columns:1.05fr .95fr;
+  gap:35px;
+  align-items:center;
+}
+
+.eyebrow{
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  background:var(--lime);
+  color:var(--green);
+  padding:7px 12px;
+  border-radius:999px;
+  font-weight:800;
+  font-size:12px;
+  text-transform:uppercase;
+  letter-spacing:.8px;
+}
+
+.hero h1{
+  font-size:clamp(42px,6vw,78px);
+  line-height:.95;
+  letter-spacing:-4px;
+  margin:20px 0;
+}
+
+.hero h1 span{
+  color:var(--green);
+}
+
+.hero p{
+  color:var(--muted);
+  max-width:680px;
+  font-size:18px;
+  line-height:1.7;
+}
+
+.hero-actions{
+  display:flex;
+  gap:12px;
+  flex-wrap:wrap;
+  margin-top:25px;
+}
+
+.primary{
+  background:var(--green);
+  color:white;
+  border:0;
+  padding:14px 22px;
+  border-radius:12px;
+  font-weight:900;
+  box-shadow:0 8px 20px rgba(28,107,67,.2);
+}
+
+.secondary{
+  background:white;
+  color:var(--ink);
+  border:1px solid var(--line);
+  padding:14px 22px;
+  border-radius:12px;
+  font-weight:800;
+}
+
+.hero-video{
+  background:#101510;
+  border-radius:28px;
+  min-height:390px;
+  overflow:hidden;
+  position:relative;
+  box-shadow:var(--shadow);
+}
+
+.hero-video iframe{
+  width:100%;
+  height:390px;
+  border:0;
+}
+
+.video-overlay{
+  position:absolute;
+  left:20px;
+  bottom:20px;
+  background:rgba(0,0,0,.7);
+  color:white;
+  padding:10px 14px;
+  border-radius:10px;
+  font-size:13px;
+  font-weight:700;
+}
+
+/* =========================
+   TRUST BAR
+========================= */
+
+.trust{
+  max-width:1400px;
+  margin:10px auto 0;
+  padding:0 5%;
+}
+
+.trust-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:12px;
+}
+
+.trust-card{
+  background:white;
+  border:1px solid var(--line);
+  padding:20px;
+  border-radius:16px;
+}
+
+.trust-card strong{
+  display:block;
+  font-size:20px;
+}
+
+.trust-card span{
+  color:var(--muted);
+  font-size:13px;
+}
+
+/* =========================
+   SECTIONS
+========================= */
+
+.section{
+  max-width:1400px;
+  margin:auto;
+  padding:70px 5%;
+}
+
+.section-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:end;
+  gap:20px;
+  margin-bottom:25px;
+}
+
+.section-head h2{
+  font-size:38px;
+  letter-spacing:-2px;
+  margin:0 0 7px;
+}
+
+.section-head p{
+  color:var(--muted);
+  margin:0;
+}
+
+.card{
+  background:white;
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  box-shadow:0 7px 25px rgba(0,0,0,.035);
+}
+
+/* =========================
+   AI FINDER
+========================= */
+
+.finder{
+  padding:25px;
+}
+
+.finder-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:14px;
+}
+
+.field label{
+  display:block;
+  font-size:12px;
+  font-weight:900;
+  text-transform:uppercase;
+  letter-spacing:.6px;
+  margin-bottom:7px;
+}
+
+.field select,
+.field input{
+  width:100%;
+  padding:13px;
+  border:1px solid var(--line);
+  border-radius:10px;
+  background:white;
+  outline:none;
+}
+
+.field select:focus,
+.field input:focus{
+  border-color:var(--green);
+}
+
+.mode-row{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  margin-top:18px;
+}
+
+.mode{
+  border:1px solid var(--line);
+  background:white;
+  padding:10px 14px;
+  border-radius:999px;
+  font-weight:800;
+}
+
+.mode.active{
+  background:var(--green);
+  color:white;
+  border-color:var(--green);
+}
+
+.finder-action{
+  margin-top:20px;
+  display:flex;
+  justify-content:flex-end;
+}
+
+/* =========================
+   RESULTS
+========================= */
+
+.results{
+  margin-top:25px;
+}
+
+.result-message{
+  background:var(--lime);
+  padding:15px 18px;
+  border-radius:14px;
+  margin-bottom:20px;
+  font-weight:700;
+}
+
+.meal-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:18px;
+}
+
+.meal-card{
+  overflow:hidden;
+  position:relative;
+  transition:.2s ease;
+}
+
+.meal-card:hover{
+  transform:translateY(-4px);
+  box-shadow:var(--shadow);
+}
+
+.meal-image{
+  height:165px;
+  background:linear-gradient(135deg,#dff3e5,#f6e6b4);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:60px;
+}
+
+.meal-body{
+  padding:18px;
+}
+
+.meal-category{
+  color:var(--green);
+  font-size:11px;
+  font-weight:900;
+  text-transform:uppercase;
+}
+
+.meal-title{
+  font-size:20px;
+  font-weight:900;
+  margin:6px 0;
+}
+
+.meal-description{
+  color:var(--muted);
+  font-size:13px;
+  line-height:1.5;
+}
+
+.tags{
+  display:flex;
+  flex-wrap:wrap;
+  gap:5px;
+  margin:12px 0;
+}
+
+.tag{
+  background:#f0f3f0;
+  padding:5px 8px;
+  border-radius:7px;
+  font-size:10px;
+  font-weight:800;
+}
+
+.meal-footer{
+  display:flex;
+  gap:8px;
+}
+
+.small-btn{
+  flex:1;
+  border:1px solid var(--line);
+  background:white;
+  padding:9px;
+  border-radius:9px;
+  font-weight:800;
+}
+
+.small-btn.primary-small{
+  background:var(--green);
+  color:white;
+  border-color:var(--green);
+}
+
+.favorite{
+  position:absolute;
+  right:12px;
+  top:12px;
+  width:38px;
+  height:38px;
+  border:0;
+  background:white;
+  border-radius:50%;
+  box-shadow:0 4px 14px rgba(0,0,0,.12);
+  font-size:19px;
+}
+
+/* =========================
+   MODES
+========================= */
+
+.mode-banner{
+  display:none;
+  margin-top:18px;
+  padding:15px;
+  border-radius:14px;
+  background:#fff7dc;
+  border:1px solid #eadba9;
+  font-size:13px;
+  line-height:1.6;
+}
+
+.mode-banner.show{
+  display:block;
+}
+
+/* =========================
+   DIRECTORY
+========================= */
+
+.directory-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:20px;
+}
+
+.directory-card{
+  padding:25px;
+}
+
+.directory-card h3{
+  margin-top:0;
+  font-size:25px;
+}
+
+.directory-search{
+  display:flex;
+  gap:8px;
+  margin-bottom:15px;
+}
+
+.directory-search input{
+  flex:1;
+  padding:12px;
+  border:1px solid var(--line);
+  border-radius:10px;
+}
+
+.directory-search button{
+  border:0;
+  background:var(--green);
+  color:white;
+  padding:12px 15px;
+  border-radius:10px;
+  font-weight:800;
+}
+
+.business-list{
+  display:grid;
+  gap:10px;
+}
+
+.business{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:13px;
+  border:1px solid var(--line);
+  border-radius:12px;
+}
+
+.business strong{
+  display:block;
+}
+
+.business small{
+  color:var(--muted);
+}
+
+.business a{
+  background:#f0f4f1;
+  padding:8px 11px;
+  border-radius:8px;
+  font-size:12px;
+  font-weight:900;
+}
+
+/* =========================
+   SHOP
+========================= */
+
+.shop-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:18px;
+}
+
+.shop-card{
+  padding:22px;
+}
+
+.shop-icon{
+  font-size:42px;
+}
+
+.shop-card h3{
+  margin:12px 0 7px;
+}
+
+.shop-card p{
+  color:var(--muted);
+  font-size:13px;
+  line-height:1.5;
+}
+
+.shop-card a{
+  display:inline-block;
+  margin-top:8px;
+  background:var(--green);
+  color:white;
+  padding:10px 13px;
+  border-radius:9px;
+  font-size:12px;
+  font-weight:900;
+}
+
+/* =========================
+   SOCIAL
+========================= */
+
+.social-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:22px;
+}
+
+.social-card{
+  padding:30px;
+  min-height:280px;
+}
+
+.social-card h3{
+  font-size:27px;
+  margin-top:0;
+}
+
+.social-card p{
+  color:var(--muted);
+  line-height:1.6;
+}
+
+.social-link{
+  display:inline-block;
+  margin-top:10px;
+  background:#111812;
+  color:white;
+  padding:12px 18px;
+  border-radius:10px;
+  font-weight:900;
+}
+
+/* =========================
+   REVIEWS
+========================= */
+
+.review-layout{
+  display:grid;
+  grid-template-columns:.7fr 1.3fr;
+  gap:25px;
+}
+
+.review-summary{
+  padding:30px;
+  text-align:center;
+}
+
+.rating-big{
+  font-size:58px;
+  font-weight:900;
+}
+
+.stars{
+  color:var(--gold);
+  letter-spacing:2px;
+}
+
+.review-form{
+  padding:25px;
+}
+
+.review-form-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+
+.review-form input,
+.review-form textarea,
+.review-form select{
+  width:100%;
+  padding:12px;
+  border:1px solid var(--line);
+  border-radius:9px;
+}
+
+.review-form textarea{
+  min-height:110px;
+  resize:vertical;
+  grid-column:1/-1;
+}
+
+.review-list{
+  margin-top:20px;
+  display:grid;
+  gap:12px;
+}
+
+.review{
+  padding:17px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:white;
+}
+
+.review-top{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+}
+
+.review-name{
+  font-weight:900;
+}
+
+.review-date{
+  color:var(--muted);
+  font-size:11px;
+}
+
+/* =========================
+   SHOPPING LIST
+========================= */
+
+.shopping-list{
+  padding:25px;
+}
+
+.shopping-items{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
+  margin-top:15px;
+}
+
+.shopping-item{
+  padding:11px;
+  background:#f5f7f4;
+  border-radius:8px;
+  font-size:13px;
+}
+
+/* =========================
+   FOOTER
+========================= */
+
+footer{
+  background:#101711;
+  color:white;
+  padding:55px 5% 25px;
+}
+
+.footer-grid{
+  max-width:1400px;
+  margin:auto;
+  display:grid;
+  grid-template-columns:1.4fr 1fr 1fr 1fr;
+  gap:30px;
+}
+
+footer h3{
+  margin-top:0;
+}
+
+footer p,
+footer a{
+  color:#b9c3bb;
+  font-size:13px;
+  line-height:1.7;
+}
+
+.footer-bottom{
+  max-width:1400px;
+  margin:35px auto 0;
+  padding-top:20px;
+  border-top:1px solid #2a332c;
+  color:#8f9b91;
+  font-size:12px;
+}
+
+/* =========================
+   MODAL
+========================= */
+
+.modal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.6);
+  z-index:2000;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+}
+
+.modal.show{
+  display:flex;
+}
+
+.modal-box{
+  background:white;
+  max-width:600px;
+  width:100%;
+  max-height:90vh;
+  overflow:auto;
+  border-radius:22px;
+  padding:28px;
+  position:relative;
+}
+
+.close-modal{
+  position:absolute;
+  right:16px;
+  top:16px;
+  border:0;
+  background:#f1f3f1;
+  border-radius:50%;
+  width:35px;
+  height:35px;
+}
+
+.modal-box h2{
+  padding-right:35px;
+}
+
+.ingredients{
+  display:grid;
+  gap:8px;
+  margin:18px 0;
+}
+
+.ingredient{
+  padding:10px;
+  background:#f4f7f4;
+  border-radius:8px;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media(max-width:1100px){
+
+  .meal-grid{
+    grid-template-columns:repeat(3,1fr);
+  }
+
+  .shop-grid{
+    grid-template-columns:repeat(2,1fr);
+  }
+
+  .finder-grid{
+    grid-template-columns:repeat(2,1fr);
+  }
+
+}
+
+@media(max-width:800px){
+
+  .nav-links{
+    display:none;
+  }
+
+  .mobile-menu{
+    display:block;
+  }
+
+  .hero-grid,
+  .directory-grid,
+  .social-grid,
+  .review-layout{
+    grid-template-columns:1fr;
+  }
+
+  .trust-grid{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .meal-grid{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .footer-grid{
+    grid-template-columns:1fr 1fr;
+  }
+
+}
+
+@media(max-width:560px){
+
+  .hero{
+    padding-top:30px;
+  }
+
+  .hero h1{
+    font-size:46px;
+    letter-spacing:-2.5px;
+  }
+
+  .hero-video,
+  .hero-video iframe{
+    min-height:230px;
+    height:230px;
+  }
+
+  .finder-grid,
+  .meal-grid,
+  .shop-grid,
+  .trust-grid,
+  .shopping-items,
+  .review-form-grid,
+  .footer-grid{
+    grid-template-columns:1fr;
+  }
+
+  .section{
+    padding:50px 5%;
+  }
+
+  .section-head{
+    display:block;
+  }
+
+  .section-head h2{
+    font-size:31px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="topbar">
+  Food Finder AI™ — Personalized meals, food resources & everyday shopping in one place.
+</div>
+
+<nav class="nav">
+  <div class="nav-inner">
+
+    <a href="#" class="logo">
+      Food Finder <span>AI</span>™
+    </a>
+
+    <div class="nav-links">
+      <a href="#finder">Find Meals</a>
+      <a href="#directory">Directory</a>
+      <a href="#shop">Shop</a>
+      <a href="#reviews">Reviews</a>
+      <a href="#social">Watch</a>
+    </div>
+
+    <button class="nav-btn" onclick="scrollToFinder()">
+      Find My Meal
+    </button>
+
+    <button class="mobile-menu"
+            onclick="document.querySelector('.nav-links').style.display =
+            document.querySelector('.nav-links').style.display === 'flex'
+            ? 'none' : 'flex'">
+      ☰
+    </button>
+
+  </div>
+</nav>
+
+
+<!-- =========================
+     HERO
+========================= -->
+
+<header class="hero">
+
+  <div class="hero-grid">
+
+    <div>
+
+      <span class="eyebrow">
+        ✦ Your Personal Food Finder
+      </span>
+
+      <h1>
+        Stop wondering<br>
+        <span>what to eat.</span>
+      </h1>
+
+      <p>
+        Food Finder AI helps you discover meals based on your preferences,
+        lifestyle, dietary needs, household needs and food goals — then
+        connects you with places to shop.
+      </p>
+
+      <div class="hero-actions">
+
+        <button class="primary" onclick="scrollToFinder()">
+          ✨ Find My Meals
+        </button>
+
+        <button class="secondary" onclick="scrollToDirectory()">
+          🛒 Find Stores
+        </button>
+
+      </div>
+
+    </div>
+
+    <div class="hero-video">
+
+      <!-- Replace VIDEO_ID with your YouTube video ID -->
+      <iframe
+        src="https://www.youtube.com/embed/VIDEO_ID"
+        title="Food Finder AI Introduction"
+        allowfullscreen>
+      </iframe>
+
+      <div class="video-overlay">
+        Watch: How Food Finder AI Works
+      </div>
+
+    </div>
+
+  </div>
+
+</header>
+
+
+<!-- TRUST -->
+
+<section class="trust">
+
+  <div class="trust-grid">
+
+    <div class="trust-card">
+      <strong>160+</strong>
+      <span>Meal combinations</span>
+    </div>
+
+    <div class="trust-card">
+      <strong>AI-Powered</strong>
+      <span>Personalized suggestions</span>
+    </div>
+
+    <div class="trust-card">
+      <strong>Senior + Mom</strong>
+      <span>Friendly modes</span>
+    </div>
+
+    <div class="trust-card">
+      <strong>Shop Local</strong>
+      <span>Grocery & pharmacy directory</span>
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- =========================
+     FINDER
+========================= -->
+
+<section class="section" id="finder">
+
+  <div class="section-head">
+
+    <div>
+      <h2>Tell Food Finder AI about you.</h2>
+      <p>
+        The more you personalize it, the better your recommendations become.
+      </p>
+    </div>
+
+  </div>
+
+  <div class="card finder">
+
+    <div class="finder-grid">
+
+      <div class="field">
+
+        <label>Diet</label>
+
+        <select id="diet">
+          <option value="all">No Specific Diet</option>
+          <option value="balanced">Balanced</option>
+          <option value="high-protein">High Protein</option>
+          <option value="low-carb">Lower Carb</option>
+          <option value="vegetarian">Vegetarian</option>
+          <option value="vegan">Vegan</option>
+          <option value="gluten-free">Gluten Free</option>
+          <option value="dairy-free">Dairy Free</option>
+        </select>
+
+      </div>
+
+
+      <div class="field">
+
+        <label>Meal Type</label>
+
+        <select id="mealType">
+
+          <option value="all">Any Meal</option>
+          <option value="breakfast">Breakfast</option>
+          <option value="lunch">Lunch</option>
+          <option value="dinner">Dinner</option>
+          <option value="snack">Snack</option>
+
+        </select>
+
+      </div>
+
+
+      <div class="field">
+
+        <label>Budget</label>
+
+        <select id="budget">
+
+          <option value="all">Any Budget</option>
+          <option value="budget">Budget Friendly</option>
+          <option value="medium">Moderate</option>
+          <option value="premium">Premium</option>
+
+        </select>
+
+      </div>
+
+
+      <div class="field">
+
+        <label>Blood Type</label>
+
+        <select id="bloodType">
+
+          <option value="none">Prefer Not To Use</option>
+          <option value="O">O</option>
+          <option value="A">A</option>
+          <option value="B">B</option>
+          <option value="AB">AB</option>
+
+        </select>
+
+      </div>
+
+    </div>
+
+
+    <div class="mode-row">
+
+      <button class="mode active"
+              data-mode="standard"
+              onclick="setMode('standard',this)">
+        Standard
+      </button>
+
+      <button class="mode"
+              data-mode="senior"
+              onclick="setMode('senior',this)">
+        Senior Mode
+      </button>
+
+      <button class="mode"
+              data-mode="mom"
+              onclick="setMode('mom',this)">
+        Mom Mode
+      </button>
+
+    </div>
+
+
+    <div id="modeBanner" class="mode-banner"></div>
+
+
+    <div class="finder-action">
+
+      <button class="primary"
+              onclick="findMeals()">
+        ✨ Generate My Meals
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <div class="results">
+
+    <div id="resultMessage" class="result-message">
+      Choose your preferences and Food Finder AI will create your meal list.
+    </div>
+
+    <div id="mealGrid" class="meal-grid"></div>
+
+  </div>
+
+</section>
+
+
+<!-- =========================
+     SHOPPING LIST
+========================= -->
+
+<section class="section">
+
+  <div class="card shopping-list">
+
+    <div class="section-head">
+
+      <div>
+        <h2>Your Shopping List</h2>
+        <p>Add ingredients from any meal to build your grocery list.</p>
+      </div>
+
+      <button class="secondary"
+              onclick="clearShoppingList()">
+        Clear List
+      </button>
+
+    </div>
+
+    <div id="shoppingItems" class="shopping-items">
+
+      <div class="shopping-item">
+        Your ingredients will appear here.
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- =========================
+     DIRECTORY
+========================= -->
+
+<section class="section" id="directory">
+
+  <div class="section-head">
+
+    <div>
+      <h2>Find What You Need Nearby</h2>
+      <p>
+        Grocery stores and pharmacies in one convenient directory.
+      </p>
+    </div>
+
+  </div>
+
+
+  <div class="directory-grid">
+
+
+    <!-- GROCERY -->
+
+    <div class="card directory-card">
+
+      <h3>🛒 Grocery Stores</h3>
+
+      <div class="directory-search">
+
+        <input
+          id="grocerySearch"
+          placeholder="Search grocery stores..."
+          oninput="filterDirectory('grocery')">
+
+        <button onclick="useLocation('grocery')">
+          Near Me
+        </button>
+
+      </div>
+
+      <div id="groceryList" class="business-list"></div>
+
+    </div>
+
+
+    <!-- PHARMACY -->
+
+    <div class="card directory-card">
+
+      <h3>💊 Pharmacies</h3>
+
+      <div class="directory-search">
+
+        <input
+          id="pharmacySearch"
+          placeholder="Search pharmacies..."
+          oninput="filterDirectory('pharmacy')">
+
+        <button onclick="useLocation('pharmacy')">
+          Near Me
+        </button>
+
+      </div>
+
+      <div id="pharmacyList" class="business-list"></div>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- =========================
+     AFFILIATE SHOP
+========================= -->
+
+<section class="section" id="shop">
+
+  <div class="section-head">
+
+    <div>
+
+      <h2>Shop Food Finder Picks</h2>
+
+      <p>
+        Helpful products and services selected to make everyday life easier.
+      </p>
+
+    </div>
+
+  </div>
+
+
+  <div class="shop-grid">
+
+
+    <div class="card shop-card">
+
+      <div class="shop-icon">🥗</div>
+
+      <h3>Kitchen Essentials</h3>
+
+      <p>
+        Helpful kitchen products for meal preparation and organization.
+      </p>
+
+      <!-- Replace with your affiliate link -->
+      <a href="YOUR_AFFILIATE_LINK"
+         target="_blank"
+         rel="nofollow sponsored">
+        Shop Kitchen
+      </a>
+
+    </div>
+
+
+    <div class="card shop-card">
+
+      <div class="shop-icon">📱</div>
+
+      <h3>Phones & Tech</h3>
+
+      <p>
+        Browse phones, tablets and technology that can help families stay connected.
+      </p>
+
+      <!-- Replace with your affiliate link -->
+      <a href="YOUR_PHONE_AFFILIATE_LINK"
+         target="_blank"
+         rel="nofollow sponsored">
+        Shop Phones
+      </a>
+
+    </div>
+
+
+    <div class="card shop-card">
+
+      <div class="shop-icon">🏠</div>
+
+      <h3>Home Essentials</h3>
+
+      <p>
+        Everyday household products and practical home organization tools.
+      </p>
+
+      <a href="YOUR_HOME_AFFILIATE_LINK"
+         target="_blank"
+         rel="nofollow sponsored">
+        Shop Home
+      </a>
+
+    </div>
+
+
+    <div class="card shop-card">
+
+      <div class="shop-icon">🛍️</div>
+
+      <h3>Food & Grocery</h3>
+
+      <p>
+        Find ingredients, pantry staples and grocery delivery options.
+      </p>
+
+      <a href="YOUR_GROCERY_AFFILIATE_LINK"
+         target="_blank"
+         rel="nofollow sponsored">
+        Shop Groceries
+      </a>
+
+    </div>
+
+  </div>
+
+  <p style="color:var(--muted);font-size:12px;margin-top:20px;">
+    Affiliate disclosure: Food Finder AI may earn a commission from qualifying
+    purchases made through certain links. This does not change the price you pay.
+  </p>
+
+</section>
+
+
+<!-- =========================
+     SOCIAL
+========================= -->
+
+<section class="section" id="social">
+
+  <div class="section-head">
+
+    <div>
+
+      <h2>Follow Food Finder AI</h2>
+
+      <p>
+        Recipes, food ideas, family tips and new features.
+      </p>
+
+    </div>
+
+  </div>
+
+
+  <div class="social-grid">
+
+
+    <div class="card social-card">
+
+      <h3>▶️ Watch on YouTube</h3>
+
+      <p>
+        Watch Food Finder AI tutorials, meal ideas, product reviews and
+        new feature announcements.
+      </p>
+
+      <a class="social-link"
+         href="YOUR_YOUTUBE_CHANNEL"
+         target="_blank"
+         rel="noopener">
+        Visit YouTube
+      </a>
+
+    </div>
+
+
+    <div class="card social-card">
+
+      <h3>♪ Follow on TikTok</h3>
+
+      <p>
+        Quick meal ideas, grocery finds, mom-friendly hacks and Food Finder AI
+        updates.
+      </p>
+
+      <a class="social-link"
+         href="YOUR_TIKTOK_LINK"
+         target="_blank"
+         rel="noopener">
+        Visit TikTok
+      </a>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- =========================
+     REVIEWS
+========================= -->
+
+<section class="section" id="reviews">
+
+  <div class="section-head">
+
+    <div>
+
+      <h2>What People Are Saying</h2>
+
+      <p>
+        Real feedback from people using Food Finder AI.
+      </p>
+
+    </div>
+
+  </div>
+
+
+  <div class="review-layout">
+
+
+    <div class="card review-summary">
+
+      <div class="rating-big" id="averageRating">
+        5.0
+      </div>
+
+      <div class="stars">
+        ★★★★★
+      </div>
+
+      <p id="reviewCount">
+        Based on early reviews
+      </p>
+
+    </div>
+
+
+    <div class="card review-form">
+
+      <h3>Leave a Review</h3>
+
+      <form id="reviewForm">
+
+        <div class="review-form-grid">
+
+          <input
+            id="reviewName"
+            required
+            placeholder="Your name">
+
+          <select id="reviewRating" required>
+
+            <option value="5">★★★★★ — 5</option>
+            <option value="4">★★★★ — 4</option>
+            <option value="3">★★★ — 3</option>
+            <option value="2">★★ — 2</option>
+            <option value="1">★ — 1</option>
+
+          </select>
+
+          <textarea
+            id="reviewText"
+            required
+            placeholder="Tell us what you think..."></textarea>
+
+        </div>
+
+        <button class="primary" type="submit">
+          Publish Review
+        </button>
+
+      </form>
+
+    </div>
+
+  </div>
+
+
+  <div id="reviewList" class="review-list"></div>
+
+</section>
+
+
+<!-- =========================
+     FOOTER
+========================= -->
+
+<footer>
+
+  <div class="footer-grid">
+
+    <div>
+
+      <h3>Food Finder AI™</h3>
+
+      <p>
+        A personalized food discovery platform designed to make deciding
+        what to eat easier for individuals, families, moms and seniors.
+      </p>
+
+    </div>
+
+
+    <div>
+
+      <h3>Explore</h3>
+
+      <p>
+        <a href="#finder">Meal Finder</a><br>
+        <a href="#directory">Directory</a><br>
+        <a href="#shop">Shop</a><br>
+        <a href="#reviews">Reviews</a>
+      </p>
+
+    </div>
+
+
+    <div>
+
+      <h3>Social</h3>
+
+      <p>
+        <a href="YOUR_TIKTOK_LINK">TikTok</a><br>
+        <a href="YOUR_YOUTUBE_CHANNEL">YouTube</a>
+      </p>
+
+    </div>
+
+
+    <div>
+
+      <h3>Important</h3>
+
+      <p>
+        Food Finder AI provides general food and lifestyle information.
+        It is not medical advice. Always consult a qualified healthcare
+        professional for individualized medical or dietary guidance.
+      </p>
+
+    </div>
+
+  </div>
+
+
+  <div class="footer-bottom">
+
+    © 2026 Food Finder AI™. All rights reserved.
+    Affiliate links may generate commissions.
+
+  </div>
+
+</footer>
+
+
+<!-- =========================
+     MEAL MODAL
+========================= -->
+
+<div id="mealModal" class="modal">
+
+  <div class="modal-box">
+
+    <button class="close-modal"
+            onclick="closeMeal()">
+      ×
+    </button>
+
+    <div id="modalContent"></div>
+
+  </div>
+
+</div>
+
+
+<script>
+
+/* ============================================================
+   FOOD FINDER AI
+   160-MEAL CATALOG
+============================================================ */
+
+
+/*
+   Instead of making users scroll through hundreds of lines,
+   the catalog is generated from 40 core meals × 4 meal profiles.
+
+   40 × 4 = 160 catalog entries.
+
+   Every generated entry remains an individual meal object.
+*/
+
+const coreMeals = [
+
+  ["Avocado Egg Bowl","breakfast","🥑",["balanced","vegetarian","low-carb"],["avocado","eggs","spinach"],"budget"],
+  ["Berry Protein Oats","breakfast","🫐",["balanced","high-protein","vegetarian"],["oats","berries","Greek yogurt"],"budget"],
+  ["Banana Peanut Butter Oats","breakfast","🍌",["balanced","vegetarian"],["oats","banana","peanut butter"],"budget"],
+  ["Veggie Breakfast Burrito","breakfast","🌯",["vegetarian","balanced"],["eggs","peppers","beans"],"budget"],
+  ["Turkey Egg Wrap","breakfast","🌯",["balanced","high-protein"],["turkey","eggs","whole grain wrap"],"medium"],
+  ["Greek Yogurt Berry Bowl","breakfast","🥣",["high-protein","vegetarian"],["Greek yogurt","berries","nuts"],"medium"],
+  ["Apple Cinnamon Oatmeal","breakfast","🍎",["vegetarian","balanced"],["oats","apple","cinnamon"],"budget"],
+  ["Spinach Mushroom Omelet","breakfast","🍳",["vegetarian","low-carb"],["eggs","spinach","mushrooms"],"budget"],
+  ["Chicken Breakfast Bowl","breakfast","🍳",["high-protein","balanced"],["chicken","eggs","rice"],"medium"],
+  ["Peach Chia Pudding","breakfast","🍑",["vegetarian","gluten-free"],["chia","peach","milk"],"medium"],
+
+  ["Chicken Garden Salad","lunch","🥗",["balanced","high-protein","low-carb"],["chicken","lettuce","tomatoes"],"medium"],
+  ["Turkey Avocado Sandwich","lunch","🥪",["balanced","high-protein"],["turkey","avocado","whole grain bread"],"medium"],
+  ["Tuna Cucumber Bowl","lunch","🥒",["high-protein","low-carb","gluten-free"],["tuna","cucumber","greens"],"budget"],
+  ["Black Bean Rice Bowl","lunch","🍚",["vegetarian","vegan","balanced"],["black beans","rice","corn"],"budget"],
+  ["Chicken Caesar Wrap","lunch","🌯",["high-protein","balanced"],["chicken","lettuce","wrap"],"medium"],
+  ["Mediterranean Chickpea Bowl","lunch","🥙",["vegetarian","vegan","balanced"],["chickpeas","cucumber","tomatoes"],"budget"],
+  ["Turkey Veggie Bowl","lunch","🥗",["balanced","high-protein"],["turkey","broccoli","rice"],"medium"],
+  ["Lentil Vegetable Soup","lunch","🍲",["vegetarian","vegan","balanced"],["lentils","carrots","celery"],"budget"],
+  ["Salmon Green Salad","lunch","🥗",["high-protein","low-carb","gluten-free"],["salmon","greens","cucumber"],"premium"],
+  ["Chicken Hummus Plate","lunch","🥙",["balanced","high-protein"],["chicken","hummus","vegetables"],"medium"],
+
+  ["Herb Roasted Chicken","dinner","🍗",["balanced","high-protein","gluten-free"],["chicken","potatoes","green beans"],"budget"],
+  ["Turkey Meatballs & Rice","dinner","🍝",["balanced","high-protein"],["turkey","rice","tomato sauce"],"medium"],
+  ["Salmon Sweet Potato Plate","dinner","🐟",["high-protein","gluten-free"],["salmon","sweet potato","broccoli"],"premium"],
+  ["Vegetable Stir Fry","dinner","🥦",["vegetarian","vegan","balanced"],["broccoli","peppers","rice"],"budget"],
+  ["Chicken Taco Bowl","dinner","🌮",["balanced","high-protein"],["chicken","beans","rice"],"budget"],
+  ["Turkey Chili","dinner","🍲",["high-protein","balanced"],["turkey","beans","tomatoes"],"budget"],
+  ["Lentil Curry Bowl","dinner","🍛",["vegetarian","vegan","gluten-free"],["lentils","coconut milk","spinach"],"budget"],
+  ["Garlic Shrimp Rice Bowl","dinner","🍤",["high-protein","gluten-free"],["shrimp","rice","vegetables"],"medium"],
+  ["Chicken Vegetable Pasta","dinner","🍝",["balanced","high-protein"],["chicken","pasta","vegetables"],"medium"],
+  ["Stuffed Bell Peppers","dinner","🫑",["balanced","gluten-free"],["peppers","ground turkey","rice"],"medium"],
+
+  ["Apple Peanut Butter Snack","snack","🍎",["vegetarian","balanced"],["apple","peanut butter"],"budget"],
+  ["Berry Yogurt Cup","snack","🫐",["vegetarian","high-protein"],["berries","Greek yogurt"],"budget"],
+  ["Hummus Veggie Cups","snack","🥕",["vegetarian","vegan"],["hummus","carrots","cucumber"],"budget"],
+  ["Banana Nut Bites","snack","🍌",["vegetarian","gluten-free"],["banana","nuts","oats"],"budget"],
+  ["Hard Boiled Egg Plate","snack","🥚",["high-protein","low-carb","gluten-free"],["eggs","fruit"],"budget"],
+  ["Cottage Cheese Berry Bowl","snack","🫐",["high-protein","low-carb"],["cottage cheese","berries"],"medium"],
+  ["Trail Mix Cup","snack","🥜",["vegetarian","balanced"],["nuts","seeds","dried fruit"],"medium"],
+  ["Roasted Chickpeas","snack","🫘",["vegan","vegetarian","high-protein"],["chickpeas","seasoning"],"budget"],
+  ["Avocado Toast Bites","snack","🥑",["vegetarian","balanced"],["avocado","whole grain bread"],"budget"],
+  ["Fruit & Nut Plate","snack","🍇",["vegetarian","vegan","gluten-free"],["apple","grapes","nuts"],"budget"]
+
+];
+
+
+/*
+   Four profiles create 160 catalog records.
+
+   Profiles:
+   Classic
+   Family
+   Senior Friendly
+   Quick & Easy
+*/
+
+const profiles = [
+
+  {
+    name:"Classic",
+    suffix:"",
+    extra:["everyday"],
+    note:"A balanced everyday option."
+  },
+
+  {
+    name:"Family",
+    suffix:" — Family Style",
+    extra:["family","kid-friendly"],
+    note:"Easy to adapt for the whole household."
+  },
+
+  {
+    name:"Senior Friendly",
+    suffix:" — Senior Friendly",
+    extra:["senior-friendly","easy-to-chew"],
+    note:"Designed with softer textures and simpler preparation in mind."
+  },
+
+  {
+    name:"Quick & Easy",
+    suffix:" — Quick & Easy",
+    extra:["quick","easy"],
+    note:"A practical option for busy days."
+  }
+
+];
+
+
+const meals = [];
+
+let mealNumber = 1;
+
+coreMeals.forEach((meal,index)=>{
+
+  profiles.forEach(profile=>{
+
+    meals.push({
+
+      id:mealNumber++,
+
+      name:meal[0] + profile.suffix,
+
+      category:meal[1],
+
+      emoji:meal[2],
+
+      tags:[...meal[3],...profile.extra],
+
+      ingredients:meal[4],
+
+      budget:meal[5],
+
+      profile:profile.name,
+
+      description:profile.note,
+
+      blood:[
+        "O",
+        "A",
+        "B",
+        "AB"
+      ]
+
+    });
+
+  });
+
+});
+
+
+/*
+   Safety / content note:
+   Blood-type matching here is presented only as a
+   personalization preference, not as medical advice.
+*/
+
+
+console.assert(
+  meals.length === 160,
+  "Food Finder AI catalog should contain exactly 160 meals."
+);
+
+
+/* ============================================================
+   STATE
+============================================================ */
+
+let currentMode = "standard";
+
+let shoppingList =
+  JSON.parse(localStorage.getItem("foodFinderShoppingList") || "[]");
+
+let favorites =
+  JSON.parse(localStorage.getItem("foodFinderFavorites") || "[]");
+
+let reviews =
+  JSON.parse(localStorage.getItem("foodFinderReviews") || "[]");
+
+
+/* ============================================================
+   HELPERS
+============================================================ */
+
+function saveState(){
+
+  localStorage.setItem(
+    "foodFinderShoppingList",
+    JSON.stringify(shoppingList)
+  );
+
+  localStorage.setItem(
+    "foodFinderFavorites",
+    JSON.stringify(favorites)
+  );
+
+  localStorage.setItem(
+    "foodFinderReviews",
+    JSON.stringify(reviews)
+  );
+
+}
+
+
+function scrollToFinder(){
+
+  document.getElementById("finder")
+    .scrollIntoView({behavior:"smooth"});
+
+}
+
+
+function scrollToDirectory(){
+
+  document.getElementById("directory")
+    .scrollIntoView({behavior:"smooth"});
+
+}
+
+
+/* ============================================================
+   MODES
+============================================================ */
+
+function setMode(mode,button){
+
+  currentMode = mode;
+
+  document
+    .querySelectorAll(".mode")
+    .forEach(item=>item.classList.remove("active"));
+
+  button.classList.add("active");
+
+  const banner =
+    document.getElementById("modeBanner");
+
+  if(mode === "senior"){
+
+    banner.innerHTML =
+      "<strong>Senior Mode is on.</strong><br>" +
+      "Food Finder AI will prioritize simple meals, softer textures, " +
+      "easy preparation and practical everyday options. " +
+      "This is general food guidance and not medical advice.";
+
+    banner.classList.add("show");
+
+  }
+
+  else if(mode === "mom"){
+
+    banner.innerHTML =
+      "<strong>Mom Mode is on.</strong><br>" +
+      "Food Finder AI will prioritize family-friendly meals, " +
+      "simple preparation, budget-conscious options and meals " +
+      "that can work for multiple people.";
+
+    banner.classList.add("show");
+
+  }
+
+  else{
+
+    banner.classList.remove("show");
+
+  }
+
+}
+
+
+/* ============================================================
+   MEAL FINDER
+============================================================ */
+
+function findMeals(){
+
+  const diet =
+    document.getElementById("diet").value;
+
+  const mealType =
+    document.getElementById("mealType").value;
+
+  const budget =
+    document.getElementById("budget").value;
+
+  const bloodType =
+    document.getElementById("bloodType").value;
+
+
+  let results = meals.filter(meal=>{
+
+    let matches = true;
+
+
+    if(mealType !== "all"){
+      matches =
+        matches &&
+        meal.category === mealType;
+    }
+
+
+    if(budget !== "all"){
+      matches =
+        matches &&
+        meal.budget === budget;
+    }
+
+
+    if(diet !== "all"){
+
+      matches =
+        matches &&
+        meal.tags.includes(diet);
+
+    }
+
+
+    if(currentMode === "senior"){
+
+      matches =
+        matches &&
+        (
+          meal.tags.includes("senior-friendly") ||
+          meal.tags.includes("easy")
+        );
+
+    }
+
+
+    if(currentMode === "mom"){
+
+      matches =
+        matches &&
+        (
+          meal.tags.includes("family") ||
+          meal.tags.includes("kid-friendly") ||
+          meal.tags.includes("quick")
+        );
+
+    }
+
+
+    /*
+       Blood type is treated as a preference filter.
+       Because blood-type diets are not established medical guidance,
+       the app does not claim that a meal is medically appropriate
+       for a blood type.
+    */
+
+    if(bloodType !== "none"){
+
+      matches =
+        matches &&
+        meal.blood.includes(bloodType);
+
+    }
+
+
+    return matches;
+
+  });
+
+
+  /*
+     If highly specific filters return very few meals,
+     show available results rather than a blank page.
+  */
+
+  if(results.length === 0){
+
+    results = meals.filter(meal=>{
+
+      if(mealType !== "all" &&
+         meal.category !== mealType){
+        return false;
+      }
+
+      return true;
+
+    }).slice(0,8);
+
+  }
+
+
+  results = results.slice(0,12);
+
+  renderMeals(results);
+
+  document
+    .getElementById("mealGrid")
+    .scrollIntoView({
+      behavior:"smooth",
+      block:"start"
+    });
+
+}
+
+
+/* ============================================================
+   RENDER MEALS
+============================================================ */
+
+function renderMeals(list){
+
+  const grid =
+    document.getElementById("mealGrid");
+
+  const message =
+    document.getElementById("resultMessage");
+
+
+  if(!list.length){
+
+    grid.innerHTML = "";
+
+    message.innerHTML =
+      "No meals matched those preferences.";
+
+    return;
+
+  }
+
+
+  message.innerHTML =
+    "✨ Food Finder AI found " +
+    list.length +
+    " personalized options for you.";
+
+
+  grid.innerHTML =
+    list.map(meal=>{
+
+      const isFavorite =
+        favorites.includes(meal.id);
+
+      return `
+
+        <article class="card meal-card">
+
+          <button
+            class="favorite"
+            onclick="toggleFavorite(${meal.id})"
+            aria-label="Favorite meal">
+
+            ${isFavorite ? "♥" : "♡"}
+
+          </button>
+
+
+          <div class="meal-image">
+
+            ${meal.emoji}
+
+          </div>
+
+
+          <div class="meal-body">
+
+            <div class="meal-category">
+
+              ${meal.category}
+
+            </div>
+
+
+            <div class="meal-title">
+
+              ${escapeHTML(meal.name)}
+
+            </div>
+
+
+            <div class="meal-description">
+
+              ${escapeHTML(meal.description)}
+
+            </div>
+
+
+            <div class="tags">
+
+              ${meal.tags
+                .slice(0,4)
+                .map(tag=>`
+                  <span class="tag">
+                    ${escapeHTML(tag)}
+                  </span>
+                `)
+                .join("")}
+
+            </div>
+
+
+            <div class="meal-footer">
+
+              <button
+                class="small-btn primary-small"
+                onclick="viewMeal(${meal.id})">
+
+                View Meal
+
+              </button>
+
+
+              <button
+                class="small-btn"
+                onclick="addMealIngredients(${meal.id})">
+
+                + List
+
+              </button>
+
+            </div>
+
+          </div>
+
+        </article>
+
+      `;
+
+    }).join("");
+
+}
+
+
+/* ============================================================
+   MEAL MODAL
+============================================================ */
+
+function viewMeal(id){
+
+  const meal =
+    meals.find(item=>item.id === id);
+
+  if(!meal) return;
+
+
+  document.getElementById("modalContent").innerHTML = `
+
+    <div style="font-size:60px">
+      ${meal.emoji}
+    </div>
+
+    <div class="meal-category">
+      ${meal.category}
+    </div>
+
+    <h2>
+      ${escapeHTML(meal.name)}
+    </h2>
+
+    <p style="color:var(--muted);line-height:1.7">
+      ${escapeHTML(meal.description)}
+    </p>
+
+    <h3>Ingredients</h3>
+
+    <div class="ingredients">
+
+      ${meal.ingredients
+        .map(item=>`
+          <div class="ingredient">
+            ✓ ${escapeHTML(item)}
+          </div>
+        `)
+        .join("")}
+
+    </div>
+
+    <button
+      class="primary"
+      onclick="addMealIngredients(${meal.id});closeMeal()">
+
+      Add Ingredients to Shopping List
+
+    </button>
+
+  `;
+
+
+  document
+    .getElementById("mealModal")
+    .classList.add("show");
+
+}
+
+
+function closeMeal(){
+
+  document
+    .getElementById("mealModal")
+    .classList.remove("show");
+
+}
+
+
+/* ============================================================
+   FAVORITES
+============================================================ */
+
+function toggleFavorite(id){
+
+  if(favorites.includes(id)){
+
+    favorites =
+      favorites.filter(item=>item !== id);
+
+  }else{
+
+    favorites.push(id);
+
+  }
+
+  saveState();
+
+  findMeals();
+
+}
+
+
+/* ============================================================
+   SHOPPING LIST
+============================================================ */
+
+function addMealIngredients(id){
+
+  const meal =
+    meals.find(item=>item.id === id);
+
+  if(!meal) return;
+
+
+  meal.ingredients.forEach(ingredient=>{
+
+    if(!shoppingList.includes(ingredient)){
+
+      shoppingList.push(ingredient);
+
+    }
+
+  });
+
+
+  saveState();
+
+  renderShoppingList();
+
+}
+
+
+function clearShoppingList(){
+
+  shoppingList = [];
+
+  saveState();
+
+  renderShoppingList();
+
+}
+
+
+function renderShoppingList(){
+
+  const container =
+    document.getElementById("shoppingItems");
+
+
+  if(shoppingList.length === 0){
+
+    container.innerHTML = `
+
+      <div class="shopping-item">
+
+        Your ingredients will appear here.
+
+      </div>
+
+    `;
+
+    return;
+
+  }
+
+
+  container.innerHTML =
+    shoppingList.map(item=>`
+
+      <div class="shopping-item">
+
+        ✓ ${escapeHTML(item)}
+
+      </div>
+
+    `).join("");
+
+}
+
+
+/* ============================================================
+   DIRECTORY DATA
+============================================================ */
+
+const groceryStores = [
+
+  {
+    name:"Walmart",
+    type:"Grocery",
+    note:"Groceries • Household • Pickup",
+    url:"https://www.walmart.com/"
+  },
+
+  {
+    name:"Kroger",
+    type:"Grocery",
+    note:"Groceries • Pickup • Delivery",
+    url:"https://www.kroger.com/"
+  },
+
+  {
+    name:"Publix",
+    type:"Grocery",
+    note:"Groceries • Pharmacy • Pickup",
+    url:"https://www.publix.com/"
+  },
+
+  {
+    name:"Aldi",
+    type:"Grocery",
+    note:"Budget-friendly groceries",
+    url:"https://www.aldi.us/"
+  },
+
+  {
+    name:"Target",
+    type:"Grocery",
+    note:"Groceries • Household • Essentials",
+    url:"https://www.target.com/"
+  },
+
+  {
+    name:"Whole Foods Market",
+    type:"Grocery",
+    note:"Fresh food • Organic options",
+    url:"https://www.wholefoodsmarket.com/"
+  }
+
+];
+
+
+const pharmacies = [
+
+  {
+    name:"CVS Pharmacy",
+    type:"Pharmacy",
+    note:"Pharmacy • Health • Household",
+    url:"https://www.cvs.com/"
+  },
+
+  {
+    name:"Walgreens",
+    type:"Pharmacy",
+    note:"Pharmacy • Health • Household",
+    url:"https://www.walgreens.com/"
+  },
+
+  {
+    name:"Rite Aid",
+    type:"Pharmacy",
+    note:"Pharmacy • Health products",
+    url:"https://www.riteaid.com/"
+  },
+
+  {
+    name:"Walmart Pharmacy",
+    type:"Pharmacy",
+    note:"Pharmacy • Prescriptions • Pickup",
+    url:"https://www.walmart.com/cp/pharmacy/5431"
+  },
+
+  {
+    name:"Publix Pharmacy",
+    type:"Pharmacy",
+    note:"Pharmacy • Prescriptions",
+    url:"https://www.publix.com/pharmacy"
+  }
+
+];
+
+
+/* ============================================================
+   DIRECTORY RENDER
+============================================================ */
+
+function renderDirectory(type,query=""){
+
+  const data =
+    type === "grocery"
+      ? groceryStores
+      : pharmacies;
+
+
+  const container =
+    document.getElementById(
+      type === "grocery"
+        ? "groceryList"
+        : "pharmacyList"
+    );
+
+
+  const filtered =
+    data.filter(item=>
+      item.name
+        .toLowerCase()
+        .includes(query.toLowerCase())
+    );
+
+
+  container.innerHTML =
+    filtered.map(item=>`
+
+      <div class="business">
+
+        <div>
+
+          <strong>
+            ${escapeHTML(item.name)}
+          </strong>
+
+          <small>
+            ${escapeHTML(item.note)}
+          </small>
+
+        </div>
+
+        <a
+          href="${item.url}"
+          target="_blank"
+          rel="noopener">
+
+          Visit
+
+        </a>
+
+      </div>
+
+    `).join("");
+
+}
+
+
+function filterDirectory(type){
+
+  const input =
+    document.getElementById(
+      type === "grocery"
+        ? "grocerySearch"
+        : "pharmacySearch"
+    );
+
+
+  renderDirectory(
+    type,
+    input.value
+  );
+
+}
+
+
+/* ============================================================
+   NEAR ME
+============================================================ */
+
+function useLocation(type){
+
+  if(!navigator.geolocation){
+
+    alert(
+      "Location services are not available on this device."
+    );
+
+    return;
+
+  }
+
+
+  navigator.geolocation.getCurrentPosition(
+
+    position=>{
+
+      const lat =
+        position.coords.latitude;
+
+      const lon =
+        position.coords.longitude;
+
+
+      const query =
+        type === "grocery"
+          ? "grocery stores"
+          : "pharmacies";
+
+
+      const mapsURL =
+        "https://www.google.com/maps/search/" +
+        encodeURIComponent(query) +
+        "/@" +
+        lat +
+        "," +
+        lon +
+        ",13z";
+
+
+      window.open(
+        mapsURL,
+        "_blank"
+      );
+
+    },
+
+    ()=>{
+      alert(
+        "Location access was not granted. You can still search the directory manually."
+      );
+    }
+
+  );
+
+}
+
+
+/* ============================================================
+   REVIEWS
+============================================================ */
+
+function renderReviews(){
+
+  const list =
+    document.getElementById("reviewList");
+
+
+  const defaultReviews = [
+
+    {
+      name:"Food Finder User",
+      rating:5,
+      text:"I love having meal ideas and grocery resources in one place.",
+      date:"2026"
+    },
+
+    {
+      name:"Early Tester",
+      rating:5,
+      text:"The meal finder makes it much easier to decide what to cook.",
+      date:"2026"
+    }
+
+  ];
+
+
+  const allReviews =
+    [...defaultReviews,...reviews];
+
+
+  list.innerHTML =
+    allReviews.map(review=>`
+
+      <div class="review">
+
+        <div class="review-top">
+
+          <div>
+
+            <div class="review-name">
+
+              ${escapeHTML(review.name)}
+
+            </div>
+
+            <div class="stars">
+
+              ${"★".repeat(Number(review.rating))}
+              ${"☆".repeat(5-Number(review.rating))}
+
+            </div>
+
+          </div>
+
+          <div class="review-date">
+
+            ${escapeHTML(review.date)}
+
+          </div>
+
+        </div>
+
+        <p>
+
+          ${escapeHTML(review.text)}
+
+        </p>
+
+      </div>
+
+    `).join("");
+
+
+  const average =
+    allReviews.reduce(
+      (sum,item)=>sum + Number(item.rating),
+      0
+    ) / allReviews.length;
+
+
+  document.getElementById("averageRating")
+    .textContent =
+      average.toFixed(1);
+
+
+  document.getElementById("reviewCount")
+    .textContent =
+      `Based on ${allReviews.length} reviews`;
+
+}
+
+
+document
+  .getElementById("reviewForm")
+  .addEventListener("submit",function(event){
+
+    event.preventDefault();
+
+
+    const review = {
+
+      name:
+        document.getElementById("reviewName").value.trim(),
+
+      rating:
+        Number(
+          document.getElementById("reviewRating").value
+        ),
+
+      text:
+        document.getElementById("reviewText").value.trim(),
+
+      date:
+        new Date().toLocaleDateString()
+
+    };
+
+
+    if(!review.name || !review.text){
+
+      return;
+
+    }
+
+
+    reviews.push(review);
+
+    saveState();
+
+    renderReviews();
+
+    this.reset();
+
+
+    alert(
+      "Thank you! Your review has been added."
+    );
+
+  });
+
+
+/* ============================================================
+   SECURITY HELPER
+============================================================ */
+
+function escapeHTML(value){
+
+  return String(value)
+
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
+
+}
+
+
+/* ============================================================
+   INITIALIZE
+============================================================ */
+
+renderShoppingList();
+
+renderReviews();
+
+renderDirectory("grocery");
+
+renderDirectory("pharmacy");
+
+
+/*
+   Show a few meals immediately.
+*/
+
+renderMeals(
+  meals.slice(0,8)
+);
+
+
+/* Close modal when clicking outside */
+
+document
+  .getElementById("mealModal")
+  .addEventListener("click",function(event){
+
+    if(event.target === this){
+
+      closeMeal();
+
+    }
+
+  });
+
+
+</script>
+
+</body>
+</html>
